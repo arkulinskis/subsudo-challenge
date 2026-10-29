@@ -667,6 +667,30 @@ db_schema:
       client_hidden: false
       name: welcomed
       type: bool
+    - admin_ui:
+        order: 34
+        width: 200
+      client_hidden: false
+      name: avatar
+      type: simpleObject
+    - admin_ui:
+        order: 35
+        width: 200
+      client_hidden: false
+      name: hurt_level
+      type: number
+    - admin_ui:
+        order: 36
+        width: 200
+      client_hidden: false
+      name: hurt_at
+      type: datetime
+    - admin_ui:
+        order: 37
+        width: 200
+      client_hidden: false
+      name: hurt_kind
+      type: string
     indexes: []
     server: full
     title: Users
@@ -677,7 +701,7 @@ metadata:
   title: Subsudo · Virtual fight club
 name: Subsudo
 native_deps:
-  head_html: "<script src=\"_/theme/legal-kit.js?v=70642d2531\"></script>\n<meta name=\"viewport\" content=\"width=device-width,\
+  head_html: "<script src=\"_/theme/legal-kit.js?v=d7d1369ce3\"></script>\n<meta name=\"viewport\" content=\"width=device-width,\
     \ initial-scale=1, viewport-fit=cover\">\n<meta name=\"theme-color\" content=\"#1c1a18\">\n<meta name=\"apple-mobile-web-app-capable\"\
     \ content=\"yes\">\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"\
     https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap\"\
@@ -686,7 +710,7 @@ native_deps:
     \ its own <link rel=\"icon\">, so drop any other icon link. */\n(function () {\n  function keep() {\n    var ours = document.getElementById('ui-favicon');\n\
     \    if (!ours) return;\n    document.querySelectorAll('link[rel~=\"icon\"]').forEach(function (l) { if (l !== ours) l.remove();\
     \ });\n  }\n  keep();\n  document.addEventListener('DOMContentLoaded', keep);\n  window.addEventListener('load', keep);\n\
-    })();\n</script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=1f6b9d4e1b\">\n<script src=\"_/theme/app.js?v=795de3762e\"\
+    })();\n</script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=55fd2da6d7\">\n<script src=\"_/theme/app.js?v=549bc3a8e3\"\
     ></script>\n"
 package_name: Subsudo
 runtime_options:

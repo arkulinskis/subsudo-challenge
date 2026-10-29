@@ -36,6 +36,22 @@ HOUSE_LEVEL_NAMES = {"rookie": "Rookie", "club": "Club", "pro": "Pro", "champ": 
 JUDGES = [("Knuckles Moreau", "power"), ("Iron Mae Okafor", "volume"), ("Sal \"The Eye\" Russo", "craft")]
 
 
+HURT_MAX = 4.0
+HURT_HOURS = 24
+
+
+def damage(outcome, method, opponent_punches):
+    """How much a bout marks your face (0..~3.6). Losing by knockout hurts most; even winners get bruised.
+    The opponent's punch count adds a little. It heals in a straight line over HURT_HOURS."""
+    if outcome == "loss":
+        base = {"ko": 3.0, "tko": 2.4}.get(method, 1.6)
+    elif outcome == "draw":
+        base = 1.1
+    else:
+        base = 0.3 if method in ("ko", "tko") else 0.6
+    return round(base + min(1.0, (opponent_punches or 0) / 150.0) * 0.6, 2)
+
+
 def tier(rating):
     for floor, name in TIERS:
         if (rating or 0) >= floor:

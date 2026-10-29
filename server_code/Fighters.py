@@ -3,6 +3,7 @@
 A fighter is a row of `users`. Public fields only leave the server through fighter() (never the email).
 """
 import datetime as dt
+import math
 import re
 import unicodedata
 
@@ -16,6 +17,48 @@ from . import Boxing as B
 
 STANCES = ("orthodox", "southpaw")
 GLOVES = ("oxblood", "black", "brass", "royal", "white", "green")
+# The Locker room's avatar parts: key -> number of choices. Must match SS.AVATAR in web/pages/_ss_face.html
+# (the flow test compares them through avatar_parts()).
+AVATAR_PARTS = {"skin": 8, "face": 5, "hair": 13, "hairColor": 10, "brows": 5, "eyes": 5, "eyeColor": 6, "nose": 5,
+                "mouth": 5, "beard": 7, "headgear": 5, "marks": 7, "outfit": 5, "kit": 8, "pose": 4, "bg": 6}
+HURT_LABELS = [(3.0, "Battered"), (2.0, "Busted up"), (1.0, "Bruised"), (0, "Sore")]
+
+
+def clean_avatar(spec):
+    """{part: index} with every part present and in range, or None."""
+    if not isinstance(spec, dict):
+        return None
+    out = {}
+    for k, n in AVATAR_PARTS.items():
+        try:
+            v = int(spec.get(k, 0))
+        except (TypeError, ValueError):
+            return None
+        if not 0 <= v < n:
+            return None
+        out[k] = v
+    return out
+
+
+def hurt_level_at(u, when):
+    """The bout damage left on this fighter's face at `when` (it heals linearly over 24 hours)."""
+    lvl, at = u["hurt_level"] or 0, u["hurt_at"]
+    if not lvl or at is None:
+        return 0.0
+    age = max(0.0, (when - at).total_seconds() / 3600.0)
+    return 0.0 if age >= B.HURT_HOURS else lvl * (1 - age / B.HURT_HOURS)
+
+
+def hurt_now(u, now=None):
+    """None, or {level, age (hours since the bout), hours_left, ko (knocked out in the last 3 hours), label}."""
+    now = now or C.now()
+    cur = hurt_level_at(u, now)
+    if cur < 0.08:
+        return None
+    age = max(0.0, (now - u["hurt_at"]).total_seconds() / 3600.0)
+    label = next(n for floor, n in HURT_LABELS if cur >= floor)
+    return {"level": round(cur, 2), "age": round(age, 1), "hours_left": max(1, int(math.ceil(B.HURT_HOURS - age))),
+            "ko": u["hurt_kind"] == "ko" and age < 3, "label": label}
 
 
 def city_key(city, country):
@@ -79,7 +122,7 @@ def fighter(u, me=None, belt_map=None):
             "record": {"w": int(u["wins"] or 0), "l": int(u["losses"] or 0), "d": int(u["draws"] or 0), "ko": int(u["kos"] or 0)},
             "ducks": int(u["ducks"] or 0), "best_speed": float(u["best_speed"] or 0), "punches": int(u["total_punches"] or 0),
             "demo": bool(u["is_demo"]), "me": me is not None and u == me,
-            "belts": (belt_map or {}).get(u.get_id(), [])}
+            "belts": (belt_map or {}).get(u.get_id(), []), "avatar": u["avatar"] or None, "hurt": hurt_now(u)}
 
 
 def _positions(me, rows):
@@ -150,6 +193,25 @@ def update_fighter(data):
     if me["rating"] is None:
         me["rating"] = B.START_RATING
     return C.ok(fighter=fighter(me, me))
+
+
+@anvil.server.callable(require_user=True)
+def update_avatar(spec, glove=None):
+    """Save the Locker room avatar (and the glove colour, which the avatar wears)."""
+    me = C.require_user()
+    clean = clean_avatar(spec)
+    if clean is None:
+        return C.fail("That avatar didn't come through. Try again.")
+    me["avatar"] = clean
+    if glove in GLOVES:
+        me["glove"] = glove
+    return C.ok(fighter=fighter(me, me))
+
+
+@anvil.server.callable
+def avatar_parts():
+    """The number of choices per avatar part (the Locker room checks it matches its own lists)."""
+    return AVATAR_PARTS
 
 
 @anvil.server.callable

@@ -45,6 +45,14 @@ record if they sign up later on the same device.
 - **Mail** (`#mail`): call-outs, house challenges, results, ducks, no-shows, post-fight words; red unread dot on the nav.
 - **Fighter pages:** rating line, record, best round, 9 badges (First blood, KO artist, Speed demon, Volume puncher,
   Iron guard, Globetrotter, House crusher, Road warrior, Belt holder).
+- **Locker room** (`#locker`): the avatar builder. A portrait (SVG) with ‹ › arrows (and ← → keys) for 17 features: skin, face
+  shape, marks (scar, cauliflower ear, tattoo, chain, earring, freckles), hair (13 styles), hair colour, brows, facial hair, eyes,
+  eye colour, nose (incl. a boxer's break), mouth (incl. mouthguard), headgear, top, kit colour, gloves, hands (guard, wraps...),
+  backdrop; Random; Save. The portrait replaces the glove avatar everywhere (cards, posters, rankings, Find, Mail).
+- **Bout damage:** every finished bout marks both faces (losing by KO most, a winner a little, plus how many punches you took):
+  flushed cheeks, a black eye, a cut brow with butterfly strips, a swollen cheek and nose tape, a second black eye and a head
+  bandage, dizzy stars for 3 hours after a KO. It heals in a straight line over 24 hours, bruises turning purple → blue →
+  yellow; a badge says "Bruised · 9h to heal". The locker can preview each stage.
 - **Profile** (`#profile`): fighter card (ring name, city + country, stance, glove colour, a line, open to fights) with
   a live preview; name, theme, sound and voice, password reset.
 - **Welcome:** every new member gets a 30-second bout from Coach Bruno (and, while demo data is loaded, a call-out from
@@ -57,7 +65,7 @@ record if they sign up later on the same device.
   members; live audience count; stats per challenge (sent, fought, house won); cancel the unanswered ones.
 - **Fight log:** every bout with kind, status, both devices, scores, punches, result and flags (very high punch rate,
   speed at the limit, identical speeds); filter; CSV download; click through to the bout.
-- **Feedback inbox, Users** (make admin, disable), **Demo data** (14 demo fighters in 11 cities with 46 bouts, open
+- **Feedback inbox, Users** (make admin, disable), **Demo data** (14 demo fighters in 11 cities with their own looks and 46 bouts, 3 of them last night so some faces are bruised, open
   call-outs and a house challenge; remove or reload).
 
 **Points:** ranked win 25, KO/TKO win 35, draw 12, loss 5; house win 15 (+ bonus), draw 8, loss 3; invite bouts (the
@@ -87,6 +95,7 @@ python tools/deploy.py --push "Message"          # deploy: commit + push to GitH
 ```
 web/            core.js/core.css (shared engine + gym design tokens), app.js (header, footer), pages/*.html
                 pages/_ss_core.html   window.SS: avatars, bout cards, poster, judges, timeline, score, sounds, unread dot
+                pages/_ss_face.html   SS.face: the avatar portraits + bout damage (built in pages/locker.html)
                 pages/_ss_motion.html phone + camera detectors and the round recorder
 client_code/    Main.py (the only Anvil form: bridge to the server, sign-in), legal.py
 server_code/    Boxing.py (rules: scoring, judges, Elo, points, house rounds), Fighters.py, Fights.py, Invites.py,

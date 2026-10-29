@@ -37,6 +37,25 @@ OPEN_CALLS = [(0, "Anyone. Any city. 60 seconds. Let's go.", False), (6, "Montr√
               (8, "Calling out the whole world. One round.", False)]
 WORDS = ["Good fight. Rematch next week?", "Respect. Your left hand is no joke.", "Lucky night. I'll be back.",
          "That uppercut came from nowhere.", "See you at the top of the board."]
+# Bouts "last night", so a first visitor sees fresh bruises: (winner index, loser index, hours ago, winner level, loser level)
+LAST_NIGHT = [(6, 7, 2, "champ", "rookie"), (0, 3, 9, "pro", "club"), (9, 12, 17, "pro", "rookie")]
+# Hand-picked looks (Locker room parts, see Fighters.AVATAR_PARTS); anything not listed is drawn at random.
+LOOKS = {
+    "Kofi Mensah": {"skin": 7, "hair": 3, "hairColor": 0, "beard": 2, "mouth": 1, "bg": 0},
+    "Mika Tanaka": {"skin": 1, "hair": 9, "hairColor": 0, "eyes": 3, "mouth": 0, "beard": 0, "headgear": 1, "bg": 1},
+    "Lucia Ferreira": {"skin": 3, "hair": 8, "hairColor": 1, "beard": 0, "marks": 6, "bg": 4},
+    "Dmitri Volkov": {"skin": 0, "hair": 1, "hairColor": 4, "beard": 3, "nose": 2, "marks": 2, "bg": 2},
+    "Siobhan Kelly": {"skin": 0, "hair": 11, "hairColor": 3, "beard": 0, "marks": 6, "bg": 3},
+    "Marcus Reed": {"skin": 6, "hair": 0, "beard": 3, "hairColor": 0, "mouth": 4, "outfit": 3, "bg": 1},
+    "√âlodie Gagnon": {"skin": 1, "hair": 10, "hairColor": 8, "beard": 0, "eyes": 1, "marks": 3, "bg": 0},
+    "Jonah Park": {"skin": 2, "hair": 4, "hairColor": 0, "beard": 0, "mouth": 4, "headgear": 2, "bg": 2},
+    "Carlos Mendoza": {"skin": 4, "hair": 2, "hairColor": 0, "beard": 4, "nose": 2, "marks": 4, "bg": 1},
+    "Priya Nair": {"skin": 4, "hair": 11, "hairColor": 0, "beard": 0, "marks": 5, "bg": 4},
+    "Tomasz Nowak": {"skin": 0, "hair": 3, "hairColor": 5, "beard": 1, "nose": 2, "bg": 4},
+    "Grace Okoro": {"skin": 6, "hair": 7, "hairColor": 0, "beard": 0, "mouth": 2, "bg": 3},
+    "Liam Walker": {"skin": 1, "hair": 5, "hairColor": 4, "beard": 1, "marks": 6, "bg": 5},
+    "Rosa Dela Cruz": {"skin": 3, "hair": 9, "hairColor": 0, "beard": 0, "headgear": 1, "bg": 1},
+}
 # Tables that hold demo rows (each has an is_demo column). Children before parents.
 DEMO_TABLES = ["points_log", "messages", "rounds", "fights", "campaigns"]
 
@@ -49,6 +68,29 @@ def ensure_loaded():
     """Call from the app's main data callables: loads the demo once, unless an admin removed it."""
     if state() == "never":
         load()
+
+
+def _look(name, rng):
+    look = {k: rng.randrange(n) for k, n in F.AVATAR_PARTS.items()}
+    look.update(headgear=0 if rng.random() < .7 else look["headgear"], marks=0 if rng.random() < .5 else look["marks"],
+                pose=rng.choice([0, 0, 1, 2]))
+    look.update(LOOKS.get(name, {}))
+    return look
+
+
+def _bout(a, b, when, secs, la, lb, seed, words=""):
+    from . import Fights
+    ra = _round(a, la, secs, seed + "a", when)
+    rb = _round(b, lb, secs, seed + "b", when, side="b")
+    f = app_tables.fights.add_row(kind="ranked", status="pending", challenger=a, opponent=b, a_name=F.ring_name(a),
+                                  b_name=F.ring_name(b), rules={"secs": secs}, a_round=ra, b_round=rb, a_words=words,
+                                  city_key=a["city_key"], created=when - dt.timedelta(hours=3), expires=when + dt.timedelta(days=7),
+                                  is_demo=True)
+    ra["fight"], rb["fight"] = f, f
+    Fights.finish(f, when)
+    for p in app_tables.points_log.search(fight=f):
+        p["created"] = when
+    return f
 
 
 def _round(user, level, secs, seed, when, side="a"):
@@ -71,6 +113,7 @@ def load():
         u.update(display_name=name, ring_name=ring, city=city, country=country, city_key=F.city_key(city, country), glove=glove,
                  stance=stance, bio=bio, open_to_fights=True, rating=rating, points=0, wins=0, losses=0, draws=0, kos=0,
                  ranked_fights=0, ducks=0, best_speed=0, total_punches=0, welcomed=True, is_demo=True,
+                 avatar=_look(name, random.Random(name)), hurt_level=0, hurt_at=None, hurt_kind="",
                  signed_up=now - dt.timedelta(days=rng.randint(70, 200)), last_seen=now - dt.timedelta(hours=rng.randint(1, 90)))
         users.append(u)
     # a season of bouts between them, oldest first
@@ -78,22 +121,15 @@ def load():
     for i, ago in enumerate(days):
         a, b = rng.sample(users, 2)
         when = now - dt.timedelta(days=ago)
-        secs = rng.choice(B.ROUND_SECS)
-        ra = _round(a, Fights._level_for(F.rating_of(a) + rng.randint(-120, 120)), secs, "d%da" % i, when)
-        rb = _round(b, Fights._level_for(F.rating_of(b) + rng.randint(-120, 120)), secs, "d%db" % i, when, side="b")
-        f = app_tables.fights.add_row(kind="ranked", status="pending", challenger=a, opponent=b, a_name=F.ring_name(a),
-                                      b_name=F.ring_name(b), rules={"secs": secs}, a_round=ra, b_round=rb,
-                                      a_words=rng.choice(["", "You've been ducking me.", "One round. Your city or mine.", ""]),
-                                      city_key=a["city_key"], created=when - dt.timedelta(hours=rng.randint(2, 40)),
-                                      expires=when + dt.timedelta(days=7), is_demo=True)
-        ra["fight"], rb["fight"] = f, f
-        Fights.finish(f)
-        f["finished"] = when
+        la = Fights._level_for(F.rating_of(a) + rng.randint(-120, 120))
+        lb = Fights._level_for(F.rating_of(b) + rng.randint(-120, 120))
+        f = _bout(a, b, when, rng.choice(B.ROUND_SECS), la, lb, "d%d" % i,
+                  rng.choice(["", "You've been ducking me.", "One round. Your city or mine.", ""]))
         if rng.random() < .35:
             f["b_words" if rng.random() < .5 else "a_words"] = rng.choice(WORDS)
-        a["last_fight"], b["last_fight"] = when, when
-        for p in app_tables.points_log.search(fight=f):
-            p["created"] = when
+    for i, (wi, li, hours, lw, ll) in enumerate(LAST_NIGHT):
+        f = _bout(users[wi], users[li], now - dt.timedelta(hours=hours), 60, lw, ll, "n%d" % i, "Tonight. You and me.")
+        f["b_words"] = rng.choice(WORDS)
     # open call-outs anyone can take
     for who, words, city_only in OPEN_CALLS:
         u = users[who]
@@ -114,8 +150,7 @@ def load():
         rb = _round(u, Fights._level_for(F.rating_of(u) + 60), 60, "fri%d" % j, now - dt.timedelta(days=2), side="b")
         rb["fight"] = f
         f["b_round"] = rb
-        Fights.finish(f)
-        f["finished"] = now - dt.timedelta(days=2, hours=j)
+        Fights.finish(f, now - dt.timedelta(days=2, hours=j))
         for p in app_tables.points_log.search(fight=f):
             p["created"] = f["finished"]
     C.set_setting("demo", "loaded")

@@ -412,7 +412,8 @@
   function userMenu(me) {
     return '<div class="ui-menu" data-menu hidden>' +
       '<div class="ui-menu-head"><strong>' + esc(me.name) + '</strong><span class="muted small">' + esc(me.email) + '</span></div>' +
-      '<a href="#profile" data-go="profile">' + UI.icon('user') + 'Your profile</a>' +
+      '<a href="#profile" data-go="profile">' + UI.icon('user') + 'Fighter card</a>' +
+      '<a href="#locker" data-go="locker">' + UI.icon('sparkle') + 'Locker room</a>' +
       (me.is_admin ? '<a href="#admin" data-go="admin">' + UI.icon('shield') + 'Admin</a>' : '') +
       '<div class="ui-menu-block"><span class="small muted">Appearance</span>' + themeSwitch() + '</div>' +
       '<button type="button" data-feedback>' + UI.icon('chat') + 'Send feedback</button>' +
@@ -505,8 +506,14 @@
       '<rect x="10.5" y="25" width="14" height="8" rx="1.6" fill="' + (light ? '#3a2d14' : '#d09b35') + '"/></svg>';
   };
   /* f: a fighter dict, or {name, house, guest} for the house / a guest */
+  /* a fighter dict -> their Locker room face (with today's bout damage); the house and guests keep a glove */
   SS.avatar = function (f, size) {
     f = f || {};
+    if (!f.house && !f.guest && !f.bare && (f.avatar || f.id) && SS.face) {
+      var t = f.hurt ? ' title="' + esc((f.hurt.ko ? 'Seeing stars' : f.hurt.label) + ', ' + f.hurt.hours_left + 'h to heal') + '"' : '';
+      return '<span class="ss-av face' + (size ? ' ' + size : '') + (f.hurt ? ' hurt' : '') + '"' + t + '>' +
+        SS.face(f.avatar || SS.defaultFace(f.id || f.ring), { glove: f.glove, hurt: f.hurt }) + '</span>';
+    }
     var cls = 'ss-av' + (size ? ' ' + size : '') + (f.house ? ' house' : '') + (f.guest ? ' guest' : '');
     var glove = f.house ? 'brass' : (f.glove || 'oxblood');
     return '<span class="' + cls + '">' + SS.gloveSvg(f.guest ? 'white' : glove) + '<b>' + (f.bare ? '' : esc(UI.initials(f.ring || f.name || '?'))) + '</b></span>';
@@ -777,6 +784,326 @@
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(done, function () { prompt('Copy this link', text); });
     prompt('Copy this link', text);
     return Promise.resolve();
+  };
+})();
+
+/* ===== _ss_face.html ===== */
+(function () {
+  'use strict';
+  var SS = window.SS = window.SS || {};
+  var uid = 0;
+
+  SS.AVATAR = {
+    skin: { label: 'Skin', names: ['Porcelain', 'Fair', 'Warm', 'Olive', 'Tan', 'Brown', 'Deep', 'Ebony'],
+      colors: ['#f6d9c6', '#efc4a4', '#e2ab84', '#c99063', '#ad7349', '#8c5737', '#6c4027', '#4b2b1a'] },
+    face: { label: 'Face shape', names: ['Oval', 'Round', 'Square jaw', 'Long', 'Heart'] },
+    hair: { label: 'Hair', names: ['Bald', 'Buzz cut', 'Crew cut', 'High fade', 'Pompadour', 'Curly top', 'Afro', 'Cornrows', 'Ponytail', 'Top bun', 'Mohawk', 'Long', 'Locs'] },
+    hairColor: { label: 'Hair colour', names: ['Jet black', 'Dark brown', 'Brown', 'Auburn', 'Dirty blond', 'Blond', 'Grey', 'White', 'Fight-night red', 'Dyed blue'],
+      colors: ['#1b1714', '#38241a', '#5e3b22', '#8a4426', '#a8814a', '#dcbc72', '#8b8884', '#e8e3d8', '#b5332a', '#2f5fb3'] },
+    brows: { label: 'Brows', names: ['Straight', 'Angry', 'Arched', 'Thick', 'Scarred'] },
+    eyes: { label: 'Eyes', names: ['Focused', 'Narrow', 'Wide', 'Dead stare', 'Sleepy'] },
+    eyeColor: { label: 'Eye colour', names: ['Dark brown', 'Brown', 'Hazel', 'Green', 'Blue', 'Grey'],
+      colors: ['#2a1a12', '#5a3a22', '#7b6a2e', '#3f6b3a', '#3b6aa8', '#6f7a84'] },
+    nose: { label: 'Nose', names: ['Straight', 'Broad', 'Boxer\'s break', 'Button', 'Long'] },
+    mouth: { label: 'Mouth', names: ['Neutral', 'Smirk', 'Mouthguard', 'Snarl', 'Grin'] },
+    beard: { label: 'Facial hair', names: ['Clean', 'Stubble', 'Goatee', 'Full beard', 'Moustache', 'Chinstrap', 'Horseshoe'] },
+    headgear: { label: 'Headgear', names: ['None', 'Headband', 'Sparring headgear', 'Bandana', 'Beanie'] },
+    marks: { label: 'Marks', names: ['None', 'Cheek scar', 'Cauliflower ear', 'Neck tattoo', 'Gold chain', 'Earring', 'Freckles'] },
+    outfit: { label: 'Top', names: ['Tank top', 'Hoodie', 'Bare chest', 'Fight robe', 'Rash guard'] },
+    kit: { label: 'Kit colour', names: ['Oxblood', 'Black', 'Brass', 'Royal', 'Ivory', 'Green', 'Purple', 'Orange'],
+      colors: ['#8e1b1b', '#24211e', '#c4912e', '#2a47a6', '#ece4d4', '#1f6b45', '#5b2a86', '#d9572b'] },
+    pose: { label: 'Hands', names: ['Guard up', 'Lead hand up', 'Hand wraps', 'Arms down'] },
+    bg: { label: 'Backdrop', names: ['Gym wall', 'The ring', 'Locker room', 'Fight poster', 'City at night', 'Oxblood'] }
+  };
+  SS.AVATAR_KEYS = Object.keys(SS.AVATAR);
+
+  /* a stable "random" look from any string (fighter id or name) */
+  function hash(s) { var h = 2166136261; s = String(s || 'x'); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  SS.defaultFace = function (seed) {
+    var h = hash(seed), out = {};
+    SS.AVATAR_KEYS.forEach(function (k, i) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = (h + i * 977) >>> 0; out[k] = h % SS.AVATAR[k].names.length; });
+    if (out.headgear > 1 && h % 3) out.headgear = 0;
+    if (h % 2) out.marks = 0;
+    return out;
+  };
+
+  function shade(hex, f) {  // f < 0 darker, > 0 lighter
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var t = f < 0 ? 0 : 255, p = Math.abs(f);
+    r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  function ell(cx, cy, rx, ry) { return 'M' + (cx - rx) + ' ' + cy + 'a' + rx + ' ' + ry + ' 0 1 0 ' + 2 * rx + ' 0a' + rx + ' ' + ry + ' 0 1 0 ' + -2 * rx + ' 0Z'; }
+  var GLOVE_HEX = { oxblood: '#8e1b1b', black: '#24211e', brass: '#c4912e', royal: '#2a47a6', white: '#efe8db', green: '#1f6b45' };
+
+  /* head shapes: [path, ear x (left), top y] */
+  var HEADS = [
+    [ell(100, 96, 36, 44), 64, 52],
+    [ell(100, 97, 40, 41), 60, 56],
+    ['M64 68Q64 52 82 52H118Q136 52 136 68V110Q136 134 114 140H86Q64 134 64 110Z', 64, 52],
+    [ell(100, 94, 33, 48), 67, 46],
+    ['M100 140Q73 128 66 100Q61 70 74 58Q86 50 100 50Q114 50 126 58Q139 70 134 100Q127 128 100 140Z', 65, 50]
+  ];
+
+  function backdrop(i, id) {
+    var o;
+    switch (i) {
+      case 1: o = '<rect width="200" height="200" fill="#1d2340"/><circle cx="100" cy="40" r="110" fill="url(#' + id + 'L)"/>' +
+        '<g stroke-width="6"><path d="M0 52H200" stroke="#c4362b"/><path d="M0 84H200" stroke="#ece4d4"/><path d="M0 116H200" stroke="#2a47a6"/></g>' +
+        '<rect x="0" y="40" width="12" height="160" fill="#b9b1a4"/><rect x="188" y="40" width="12" height="160" fill="#b9b1a4"/>'; break;
+      case 2: o = '<rect width="200" height="200" fill="#58616c"/>' + [0, 1, 2, 3, 4].map(function (k) {
+          return '<rect x="' + (k * 40 + 2) + '" y="0" width="36" height="200" fill="#66707c"/><path d="M' + (k * 40 + 10) + ' 20h20M' + (k * 40 + 10) + ' 26h20M' + (k * 40 + 10) + ' 32h20" stroke="#4a525c" stroke-width="2"/>' +
+            '<rect x="' + (k * 40 + 30) + '" y="70" width="3" height="16" rx="1.5" fill="#c9ced4"/>';
+        }).join(''); break;
+      case 3: o = '<rect width="200" height="200" fill="#efe3c8"/><rect width="200" height="34" fill="#8e1b1b"/><path d="M0 34h200" stroke="#1c1a18" stroke-width="3"/>' +
+        '<g fill="#1c1a18" opacity=".08">' + (function () { var d = ''; for (var y = 44; y < 200; y += 9) for (var x = (y % 18 ? 4 : 8); x < 200; x += 9) d += '<circle cx="' + x + '" cy="' + y + '" r="2"/>'; return d; })() + '</g>'; break;
+      case 4: o = '<rect width="200" height="200" fill="#141a33"/><g fill="#0b0f22"><rect x="0" y="96" width="38" height="104"/><rect x="34" y="70" width="30" height="130"/>' +
+        '<rect x="138" y="80" width="30" height="120"/><rect x="164" y="104" width="36" height="96"/></g><g fill="#e3b85c" opacity=".7">' +
+        '<rect x="42" y="80" width="4" height="5"/><rect x="52" y="92" width="4" height="5"/><rect x="146" y="90" width="4" height="5"/><rect x="156" y="104" width="4" height="5"/>' +
+        '<rect x="10" y="108" width="4" height="5"/><rect x="176" y="116" width="4" height="5"/></g><circle cx="160" cy="34" r="12" fill="#e9e1cf" opacity=".85"/>'; break;
+      case 5: o = '<rect width="200" height="200" fill="#8e1b1b"/><circle cx="100" cy="80" r="120" fill="url(#' + id + 'L)"/>'; break;
+      default: o = '<rect width="200" height="200" fill="#3b2a22"/><g stroke="#2a1d17" stroke-width="2.5">' + (function () {
+          var d = ''; for (var y = 22, r = 0; y < 200; y += 22, r++) { d += '<path d="M0 ' + y + 'H200"/>'; for (var x = (r % 2 ? 0 : 24); x < 200; x += 48) d += '<path d="M' + x + ' ' + (y - 22) + 'V' + y + '"/>'; } return d;
+        })() + '</g><circle cx="100" cy="60" r="110" fill="url(#' + id + 'L)"/>';
+    }
+    return o;
+  }
+
+  function torso(sp, skin, kit) {
+    var s = '<path d="M8 200Q12 164 54 156Q78 150 88 148H112Q122 150 146 156Q188 164 192 200Z" fill="' + skin + '"/>';
+    var dk = shade(kit, -.28);
+    switch (sp.outfit) {
+      case 0: s += '<path d="M60 200Q62 172 74 158L88 152Q100 170 112 152L126 158Q138 172 140 200Z" fill="' + kit + '"/>' +
+          '<path d="M74 158L88 152Q100 170 112 152L126 158" fill="none" stroke="' + dk + '" stroke-width="3"/>'; break;
+      case 1: s += '<path d="M8 200Q12 164 54 156Q78 150 88 148H112Q122 150 146 156Q188 164 192 200Z" fill="' + kit + '"/>' +
+          '<path d="M66 156Q100 186 134 156Q126 142 114 142Q100 160 86 142Q74 142 66 156Z" fill="' + dk + '"/>' +
+          '<path d="M92 164V184M108 164V184" stroke="#ece4d4" stroke-width="2.5" stroke-linecap="round"/>'; break;
+      case 2: s += '<path d="M70 178Q86 186 98 178M102 178Q114 186 130 178" fill="none" stroke="' + shade(skin, -.22) + '" stroke-width="2.5" stroke-linecap="round"/>' +
+          '<path d="M30 200Q44 176 64 168" fill="none" stroke="' + shade(skin, -.18) + '" stroke-width="2"/>'; break;
+      case 3: s += '<path d="M8 200Q12 164 54 156Q78 150 88 148H112Q122 150 146 156Q188 164 192 200Z" fill="' + kit + '"/>' +
+          '<path d="M40 166Q70 154 84 150L100 200M160 166Q130 154 116 150L100 200" fill="none" stroke="#e3b85c" stroke-width="5"/>' +
+          '<path d="M86 150L100 192L114 150" fill="' + shade(skin, -.08) + '"/><path d="M28 182Q60 166 76 160" stroke="#fff" stroke-opacity=".22" stroke-width="5" fill="none"/>'; break;
+      case 4: s += '<path d="M8 200Q12 164 54 156Q78 150 88 148H112Q122 150 146 156Q188 164 192 200Z" fill="' + kit + '"/>' +
+          '<path d="M10 188Q100 170 190 188" stroke="' + (kit === '#ece4d4' ? '#8e1b1b' : '#ece4d4') + '" stroke-width="7" fill="none"/>' +
+          '<path d="M84 150Q100 162 116 150" fill="none" stroke="' + dk + '" stroke-width="4"/>'; break;
+    }
+    return s;
+  }
+
+  function gloveFront(cx, cy, c, s) {
+    s = s || 1;
+    var d = shade(c, -.3), hi = c === '#efe8db' ? 'rgba(0,0,0,.18)' : 'rgba(255,255,255,.28)';
+    return '<g transform="translate(' + cx + ' ' + cy + ') scale(' + s + ')"><rect x="-15" y="16" width="30" height="24" rx="4" fill="' + d + '"/>' +
+      '<path d="M-15 24H15" stroke="#ece4d4" stroke-width="2" stroke-dasharray="3 3"/>' +
+      '<path d="M-22 6Q-24 -24 0 -24Q24 -24 22 6Q20 22 0 22Q-20 22 -22 6Z" fill="' + c + '" stroke="rgba(0,0,0,.4)" stroke-width="2"/>' +
+      '<path d="M-14 4Q-4 14 10 6" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="-8" cy="-13" rx="7" ry="3.5" fill="' + hi + '" transform="rotate(-20 -8 -13)"/></g>';
+  }
+  function wrapFist(cx, cy, skin) {
+    return '<g transform="translate(' + cx + ' ' + cy + ')"><rect x="-17" y="-12" width="34" height="30" rx="9" fill="#efe8db" stroke="rgba(0,0,0,.35)" stroke-width="2"/>' +
+      '<path d="M-17 -2H17M-17 8H17" stroke="#cfc5b4" stroke-width="2"/><path d="M-13 -12Q-13 -22 -6 -22Q0 -22 0 -14Q0 -22 7 -22Q13 -22 13 -12" fill="' + skin + '" stroke="rgba(0,0,0,.3)" stroke-width="1.5"/>' +
+      '<rect x="-12" y="18" width="24" height="22" fill="#efe8db"/></g>';
+  }
+  function hands(sp, skin, glove) {
+    var c = GLOVE_HEX[glove] || glove || GLOVE_HEX.oxblood;
+    switch (sp.pose) {
+      case 1: return gloveFront(62, 156, c, 1.05) + gloveFront(142, 184, c, 1);
+      case 2: return wrapFist(66, 176, skin) + wrapFist(134, 176, skin);
+      case 3: return '';
+      default: return gloveFront(62, 168, c) + gloveFront(138, 168, c);
+    }
+  }
+
+  function ears(sp, skin, earX) {
+    if (sp.headgear === 2) return '';
+    var d = shade(skin, -.15), cauli = sp.marks === 2;
+    var one = function (x, flip) {
+      var r = cauli ? 11 : 9;
+      var s = '<ellipse cx="' + x + '" cy="98" rx="' + (r - 2) + '" ry="' + r + '" fill="' + skin + '"/>' +
+        '<path d="M' + (x + (flip ? -3 : 3)) + ' 92q' + (flip ? -4 : 4) + ' 6 0 12" fill="none" stroke="' + d + '" stroke-width="2"/>';
+      if (cauli && !flip) s += '<circle cx="' + (x - 3) + '" cy="92" r="4" fill="' + shade(skin, -.08) + '"/><circle cx="' + (x - 1) + '" cy="103" r="3.5" fill="' + shade(skin, -.08) + '"/>';
+      return s;
+    };
+    return one(earX, false) + one(200 - earX, true);
+  }
+
+  /* hair: [back layer, cap (clipped to the head), extras on top] */
+  function hair(sp, hc, id, top) {
+    var dk = shade(hc, -.25), back = '', cap = '', front = '';
+    var capPath = function (side, hl, op) {
+      return '<path d="M30 20H170V' + side + 'Q100 ' + hl + ' 30 ' + side + 'Z" fill="' + hc + '"' + (op ? ' opacity="' + op + '"' : '') + ' clip-path="url(#' + id + 'H)"/>';
+    };
+    switch (sp.hair) {
+      case 1: cap = capPath(82, 62, .72); break;
+      case 2: cap = capPath(84, 64) + '<path d="M78 60q22 -8 44 0" stroke="' + dk + '" stroke-width="2" fill="none" clip-path="url(#' + id + 'H)"/>'; break;
+      case 3: cap = capPath(78, 64, .55); front = '<path d="M68 70L70 ' + (top - 12) + 'Q100 ' + (top - 18) + ' 130 ' + (top - 12) + 'L132 70Q100 62 68 70Z" fill="' + hc + '"/>'; break;
+      case 4: cap = capPath(84, 66); front = '<path d="M64 74Q58 ' + (top - 18) + ' 100 ' + (top - 20) + 'Q148 ' + (top - 22) + ' 138 74Q124 56 100 62Q78 58 64 74Z" fill="' + hc + '"/>' +
+        '<path d="M80 ' + (top - 8) + 'Q104 ' + (top - 18) + ' 128 ' + (top - 6) + '" stroke="' + shade(hc, .25) + '" stroke-width="3" fill="none" opacity=".6"/>'; break;
+      case 5: cap = capPath(82, 66); front = [66, 78, 90, 102, 114, 126, 136].map(function (x, i) {
+          return '<circle cx="' + x + '" cy="' + (top + (i % 2 ? 2 : -4) + (i === 0 || i === 6 ? 12 : 0)) + '" r="11" fill="' + hc + '"/>';
+        }).join(''); break;
+      case 6: back = '<circle cx="100" cy="' + (top + 30) + '" r="58" fill="' + hc + '"/>'; cap = capPath(86, 70);
+        front = '<path d="M60 74Q64 ' + (top - 2) + ' 100 ' + (top - 4) + 'Q136 ' + (top - 2) + ' 140 74Q120 62 100 66Q80 62 60 74Z" fill="' + hc + '"/>'; break;
+      case 7: cap = capPath(84, 64) + [84, 92, 100, 108, 116].map(function (x) { return '<path d="M' + x + ' 50L' + (x + (x - 100) * .3) + ' 70" stroke="' + shade(hc, .3) + '" stroke-width="2" clip-path="url(#' + id + 'H)"/>'; }).join(''); break;
+      case 8: back = '<path d="M128 74Q166 90 156 148Q150 112 130 100Z" fill="' + hc + '"/>'; cap = capPath(84, 64); front = '<circle cx="134" cy="76" r="5" fill="' + dk + '"/>'; break;
+      case 9: cap = capPath(84, 64); front = '<circle cx="100" cy="' + (top - 10) + '" r="14" fill="' + hc + '"/><path d="M90 ' + (top - 2) + 'h20" stroke="' + dk + '" stroke-width="3"/>'; break;
+      case 10: cap = capPath(84, 64, .22); front = '<path d="M92 72L90 ' + (top - 24) + 'L96 ' + (top - 14) + 'L100 ' + (top - 28) + 'L104 ' + (top - 14) + 'L110 ' + (top - 24) + 'L108 72Z" fill="' + hc + '"/>'; break;
+      case 11: back = '<path d="M60 70Q52 140 64 178H136Q148 140 140 70Z" fill="' + hc + '"/>'; cap = capPath(98, 64);
+        front = '<path d="M64 98Q62 66 92 58Q74 74 72 104Z" fill="' + hc + '"/>'; break;
+      case 12: back = [62, 72, 82, 118, 128, 138].map(function (x) { return '<rect x="' + (x - 4) + '" y="70" width="8" height="' + (x < 100 ? 92 : 86) + '" rx="4" fill="' + hc + '"/>'; }).join('');
+        cap = capPath(86, 66); front = [80, 92, 104, 116].map(function (x) { return '<rect x="' + (x - 4) + '" y="58" width="8" height="26" rx="4" fill="' + hc + '" transform="rotate(' + ((x - 98) / 3) + ' ' + x + ' 58)"/>'; }).join(''); break;
+      default: cap = '<ellipse cx="88" cy="' + (top + 8) + '" rx="9" ry="4" fill="#fff" opacity=".18"/>';
+    }
+    return [back, cap, front];
+  }
+
+  function brows(i, c) {
+    var w = i === 3 ? 7 : 4.5, s = '<g stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round" fill="none">';
+    switch (i) {
+      case 1: s += '<path d="M77 80L96 86M104 86L123 80"/>'; break;
+      case 2: s += '<path d="M77 86Q86 77 96 83M104 83Q114 77 123 86"/>'; break;
+      case 4: s += '<path d="M77 84H96M104 84H110M115 84H123"/>'; break;
+      default: s += '<path d="M77 84H96M104 84H123"/>';
+    }
+    return s + '</g>';
+  }
+
+  function eyes(i, ec, skin) {
+    var ry = [4.2, 2.6, 5.4, 4, 4][i], ir = [3.4, 2.6, 3.8, 3.2, 3.2][i], s = '';
+    [86, 114].forEach(function (x) {
+      s += '<ellipse cx="' + x + '" cy="96" rx="7" ry="' + ry + '" fill="#f4efe6"/><circle cx="' + x + '" cy="96.5" r="' + ir + '" fill="' + ec + '"/>' +
+        '<circle cx="' + x + '" cy="96.5" r="' + (ir * .5) + '" fill="#0b0908"/><circle cx="' + (x - 1.2) + '" cy="95" r="1" fill="#fff"/>';
+      if (i === 3) s += '<path d="M' + (x - 8) + ' 93H' + (x + 8) + '" stroke="#1b1714" stroke-width="3" stroke-linecap="round"/>';
+      if (i === 4) s += '<path d="M' + (x - 8) + ' 96.5H' + (x + 8) + 'V90H' + (x - 8) + 'Z" fill="' + skin + '"/><path d="M' + (x - 7.5) + ' 96.5H' + (x + 7.5) + '" stroke="#1b1714" stroke-width="2.2" stroke-linecap="round"/>';
+      if (i === 1) s += '<path d="M' + (x - 8) + ' 93.5Q' + x + ' 92 ' + (x + 8) + ' 93.5" stroke="#1b1714" stroke-width="2" fill="none"/>';
+      if (i === 0 || i === 2) s += '<path d="M' + (x - 7.5) + ' ' + (96 - ry + .5) + 'Q' + x + ' ' + (96 - ry - 2) + ' ' + (x + 7.5) + ' ' + (96 - ry + .5) + '" stroke="#1b1714" stroke-width="1.8" fill="none"/>';
+    });
+    return s;
+  }
+
+  function nose(i, skin) {
+    var c = shade(skin, -.3), g = '<g stroke="' + c + '" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round">';
+    switch (i) {
+      case 1: g += '<path d="M99 99L97 108"/><path d="M92 110Q100 117 108 110"/><circle cx="95" cy="111" r="1.4" fill="' + c + '"/><circle cx="105" cy="111" r="1.4" fill="' + c + '"/>'; break;
+      case 2: g += '<path d="M100 96Q105 102 99 106Q96 110 103 112"/><path d="M95 112Q99 114 103 112"/>'; break;
+      case 3: g += '<path d="M96 110Q100 114 104 110"/>'; break;
+      case 4: g += '<path d="M100 92L96 112Q100 115 105 112"/>'; break;
+      default: g += '<path d="M100 98L97 110Q100 113 104 111"/>';
+    }
+    return g + '</g>';
+  }
+
+  function mouth(i, kit) {
+    switch (i) {
+      case 1: return '<path d="M90 124Q102 126 111 119" stroke="#5a2a22" stroke-width="3" fill="none" stroke-linecap="round"/>';
+      case 2: return '<rect x="87" y="117" width="26" height="11" rx="5.5" fill="' + kit + '" stroke="rgba(0,0,0,.45)" stroke-width="2"/><path d="M93 117V128M100 117V128M107 117V128" stroke="#fff" stroke-opacity=".3" stroke-width="1.5"/>';
+      case 3: return '<path d="M88 121Q100 115 112 121Q100 131 88 121Z" fill="#3a1410"/><path d="M90 120.5Q100 116.5 110 120.5L109 122.5Q100 119 91 122.5Z" fill="#f4efe6"/>';
+      case 4: return '<path d="M87 119Q100 135 113 119Z" fill="#3a1410"/><path d="M88.5 119.5H111.5L110 123H90Z" fill="#f4efe6"/>';
+      default: return '<path d="M90 123Q100 125 110 123" stroke="#5a2a22" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    }
+  }
+
+  function beard(i, hc, id, headPath) {
+    var jaw = '<path d="M40 104Q60 114 76 114Q100 108 124 114Q140 114 160 104V200H40Z" fill="' + hc + '"';
+    switch (i) {
+      case 1: return [jaw + ' opacity=".32" clip-path="url(#' + id + 'H0)"/>', ''];
+      case 2: return ['<path d="M89 128Q100 150 111 128Q100 133 89 128Z" fill="' + hc + '"/>', moustache(hc, .8)];
+      case 3: return [jaw + ' clip-path="url(#' + id + 'H0)"/>', moustache(hc, 1)];
+      case 4: return ['', moustache(hc, 1.1)];
+      case 5: return ['<path d="' + headPath + '" fill="none" stroke="' + hc + '" stroke-width="8" clip-path="url(#' + id + 'J)"/>', ''];
+      case 6: return ['<path d="M86 118V140M114 118V140" stroke="' + hc + '" stroke-width="6" stroke-linecap="round"/>', moustache(hc, 1)];
+      default: return ['', ''];
+    }
+  }
+  function moustache(hc, s) {
+    return '<path d="M84 120Q92 ' + (113 - 2 * s) + ' 100 115Q108 ' + (113 - 2 * s) + ' 116 120Q108 117 100 118Q92 117 84 120Z" fill="' + hc + '"/>';
+  }
+
+  function headgear(i, kit, top, id) {
+    var dk = shade(kit, -.3);
+    switch (i) {
+      case 1: return ['', '<path d="M58 76Q100 62 142 76V84Q100 70 58 84Z" fill="' + kit + '" clip-path="url(#' + id + 'H)"/>' +
+        '<path d="M140 78L156 72L152 86Z" fill="' + kit + '"/><path d="M140 80L158 90L148 94Z" fill="' + dk + '"/>'];
+      case 2: return ['<ellipse cx="100" cy="94" rx="48" ry="54" fill="' + kit + '"/>',
+        '<path d="M56 80Q58 ' + (top - 8) + ' 100 ' + (top - 10) + 'Q142 ' + (top - 8) + ' 144 80Q124 64 100 64Q76 64 56 80Z" fill="' + kit + '" stroke="' + dk + '" stroke-width="2"/>' +
+        '<path d="M56 82Q52 114 70 130L78 120Q66 106 68 86Z" fill="' + kit + '" stroke="' + dk + '" stroke-width="2"/><path d="M144 82Q148 114 130 130L122 120Q134 106 132 86Z" fill="' + kit + '" stroke="' + dk + '" stroke-width="2"/>' +
+        '<path d="M74 132Q100 150 126 132" fill="none" stroke="' + dk + '" stroke-width="4"/><path d="M84 ' + (top - 4) + 'H116" stroke="#ece4d4" stroke-width="3" stroke-opacity=".5"/>'];
+      case 3: return ['', '<path d="M30 20H170V78Q100 66 30 78Z" fill="' + kit + '" clip-path="url(#' + id + 'H)"/>' +
+        '<g fill="#ece4d4" opacity=".55" clip-path="url(#' + id + 'H)"><circle cx="84" cy="62" r="2"/><circle cx="100" cy="56" r="2"/><circle cx="116" cy="62" r="2"/><circle cx="92" cy="70" r="1.6"/><circle cx="108" cy="70" r="1.6"/></g>' +
+        '<path d="M136 72L156 66L150 82Z" fill="' + dk + '"/>'];
+      case 4: return ['', '<path d="M60 80Q56 ' + (top - 14) + ' 100 ' + (top - 16) + 'Q144 ' + (top - 14) + ' 140 80Z" fill="' + kit + '"/>' +
+        '<rect x="56" y="70" width="88" height="14" rx="6" fill="' + dk + '"/><circle cx="100" cy="' + (top - 18) + '" r="9" fill="' + shade(kit, .2) + '"/>'];
+      default: return ['', ''];
+    }
+  }
+
+  function marks(i, skin, earX) {
+    switch (i) {
+      case 1: return '<path d="M118 104L127 117" stroke="' + shade(skin, .35) + '" stroke-width="2.5" stroke-linecap="round"/><path d="M119 108l4 -2M121 111l4 -2M123 114l4 -2" stroke="' + shade(skin, -.25) + '" stroke-width="1.2"/>';
+      case 3: return '<g stroke="#1f2a3a" stroke-width="1.8" fill="none" opacity=".85"><path d="M106 140l3 7h7l-6 4 3 7-7 -4 -6 4 2 -7 -6 -4h7z"/></g>';
+      case 4: return '<path d="M76 154Q100 178 124 154" fill="none" stroke="#d7a640" stroke-width="3" stroke-dasharray="3 2"/><circle cx="100" cy="170" r="4.5" fill="#d7a640"/>';
+      case 5: return '<circle cx="' + (200 - earX + 1) + '" cy="108" r="3" fill="#e3b85c" stroke="#8a5f12" stroke-width="1"/>';
+      case 6: return '<g fill="' + shade(skin, -.3) + '" opacity=".55"><circle cx="80" cy="106" r="1.3"/><circle cx="85" cy="109" r="1.3"/><circle cx="78" cy="111" r="1.3"/><circle cx="120" cy="106" r="1.3"/><circle cx="115" cy="109" r="1.3"/><circle cx="122" cy="111" r="1.3"/></g>';
+      default: return '';
+    }
+  }
+
+  /* bout damage: colour by age (fresh purple-red -> blue -> yellow-green), amount by level */
+  function injuries(h, id, skin) {
+    if (!h || !(h.level > 0.05)) return ['', ''];
+    var lv = h.level, age = h.age || 0;
+    var col = age < 6 ? '#5e1846' : age < 14 ? '#3d3a7a' : '#7d8a2e';
+    var a = Math.min(1, 0.45 + lv / 4);
+    var defs = '<radialGradient id="' + id + 'B"><stop offset="0" stop-color="' + col + '" stop-opacity="' + (.9 * a) + '"/><stop offset=".6" stop-color="' + col + '" stop-opacity="' + (.5 * a) + '"/>' +
+      '<stop offset="1" stop-color="' + col + '" stop-opacity="0"/></radialGradient>';
+    var o = '';
+    if (lv >= .3) o += '<ellipse cx="121" cy="110" rx="10" ry="7" fill="#d2453a" opacity="' + (.18 + lv * .05) + '"/><ellipse cx="79" cy="110" rx="9" ry="6" fill="#d2453a" opacity="' + (.12 + lv * .04) + '"/>';
+    if (lv >= 1) o += '<ellipse cx="86" cy="97" rx="15" ry="12" fill="url(#' + id + 'B)"/>';
+    if (lv >= 2.8) o += '<ellipse cx="114" cy="97" rx="14" ry="11" fill="url(#' + id + 'B)"/>';
+    if (lv >= 2.2) o += '<path d="M64 104Q58 114 68 122" fill="' + shade(skin, -.06) + '" stroke="' + col + '" stroke-opacity=".5" stroke-width="2"/>' +
+      '<ellipse cx="76" cy="112" rx="10" ry="8" fill="' + col + '" opacity=".35"/>' +
+      '<rect x="91" y="101" width="18" height="6" rx="2" fill="#f3e6cf" stroke="#c9b48e" stroke-width="1" transform="rotate(-12 100 104)"/>';
+    var top = '';
+    if (lv >= 1.6) top += '<path d="M109 78L121 85" stroke="#a0201a" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<rect x="110" y="77" width="3.5" height="10" rx="1" fill="#f6f1e6" stroke="#cfc5b4" stroke-width=".8" transform="rotate(28 112 82)"/>' +
+      '<rect x="116" y="80" width="3.5" height="10" rx="1" fill="#f6f1e6" stroke="#cfc5b4" stroke-width=".8" transform="rotate(28 118 85)"/>';
+    if (lv >= 2.8) top += '<path d="M58 72Q100 54 142 66L143 78Q100 66 57 84Z" fill="#f6f1e6" stroke="#cfc5b4" stroke-width="1.2"/>' +
+      '<path d="M70 70l8 -3M88 64l8 -2M106 62l8 0" stroke="#d8cfbe" stroke-width="1.5"/><circle cx="72" cy="74" r="3" fill="#b3261e" opacity=".7"/>';
+    if (h.ko) top += '<g fill="#f2c94c" stroke="#7d540f" stroke-width="1">' + [[58, 46, 0], [100, 30, 20], [142, 46, -15]].map(function (p) {
+        return '<path transform="translate(' + p[0] + ' ' + p[1] + ') rotate(' + p[2] + ')" d="M0 -8L2.4 -2.4L8 -2.4L3.6 1.2L5 7L0 3.6L-5 7L-3.6 1.2L-8 -2.4L-2.4 -2.4Z"/>';
+      }).join('') + '<ellipse cx="100" cy="42" rx="48" ry="10" fill="none" stroke="#f2c94c" stroke-opacity=".5" stroke-dasharray="4 5"/></g>';
+    return [defs, o, top];
+  }
+
+  SS.face = function (spec, opts) {
+    opts = opts || {};
+    var sp = {};
+    SS.AVATAR_KEYS.forEach(function (k) { var v = spec && spec[k]; sp[k] = typeof v === 'number' && v >= 0 && v < SS.AVATAR[k].names.length ? v : 0; });
+    var id = 'sf' + (++uid);
+    var skin = SS.AVATAR.skin.colors[sp.skin], hc = SS.AVATAR.hairColor.colors[sp.hairColor], kit = SS.AVATAR.kit.colors[sp.kit];
+    var ec = SS.AVATAR.eyeColor.colors[sp.eyeColor];
+    var H = HEADS[sp.face], hp = H[0], earX = H[1], top = H[2];
+    var hr = hair(sp, hc, id, top), bd = beard(sp.beard, hc, id, hp), hg = headgear(sp.headgear, kit, top, id), inj = injuries(opts.hurt, id, skin);
+    var browC = sp.hair === 0 && sp.hairColor > 5 ? shade(skin, -.45) : shade(hc, -.1);
+    return '<svg viewBox="' + (opts.full ? '0 0 200 200' : '20 18 160 160') + '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>' +
+      '<radialGradient id="' + id + 'L"><stop offset="0" stop-color="#fff3d6" stop-opacity=".28"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
+      '<clipPath id="' + id + 'H"><path d="' + hp + '" transform="translate(100 96) scale(1.06) translate(-100 -96)"/></clipPath>' +
+      '<clipPath id="' + id + 'H0"><path d="' + hp + '"/></clipPath>' +
+      '<clipPath id="' + id + 'J"><rect x="0" y="106" width="200" height="94"/></clipPath>' + (inj[0] || '') + '</defs>' +
+      backdrop(sp.bg, id) + hg[0] + hr[0] + torso(sp, skin, kit) +
+      '<path d="M86 124V158Q100 166 114 158V124Z" fill="' + shade(skin, -.12) + '"/>' +
+      ears(sp, skin, earX) + '<path d="' + hp + '" fill="' + skin + '"/>' +
+      '<path d="' + hp + '" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="2"/>' +
+      '<ellipse cx="100" cy="112" rx="26" ry="20" fill="' + shade(skin, .06) + '" opacity=".35"/>' +
+      bd[0] + eyes(sp.eyes, ec, skin) + brows(sp.brows, browC) + nose(sp.nose, skin) + mouth(sp.mouth, kit) + bd[1] +
+      marks(sp.marks, skin, earX) + (inj[1] || '') + hr[1] + hr[2] + hg[1] + (inj[2] || '') + hands(sp, skin, opts.glove) + '</svg>';
+  };
+
+  SS.hurtBadge = function (h) {
+    if (!h) return '';
+    var heal = h.age >= 14;
+    return '<span class="ss-hurt' + (heal ? ' heal' : '') + '" title="From a bout ' + Math.round(h.age) + 'h ago">' + UI.icon(heal ? 'heart' : 'bolt') +
+      UI.esc(h.ko ? 'Seeing stars' : heal ? 'Healing' : h.label) + ' · ' + h.hours_left + 'h to heal</span>';
   };
 })();
 
@@ -1774,7 +2101,7 @@
       document.title = f.ring + ' · Subsudo';
       view.innerHTML = '<div class="ui-wrap"><section class="fp-hero">' + SS.avatar(f, 'xl') + '<div style="min-width:0"><div class="ss-sub">' + esc(f.name) + (f.city ? ' · ' + SS.place(f) : '') +
         ' · ' + esc(f.stance) + '</div><h1>' + esc(f.ring) + '</h1><div class="ui-row" style="gap:6px">' + SS.tier(f.tier) + SS.belts(f.belts) +
-        (f.provisional ? '<span class="ui-badge">Unranked</span>' : '') + (f.open ? '<span class="ui-badge good">Open to fights</span>' : '') + (f.demo ? '<span class="ui-badge">Demo</span>' : '') + '</div>' +
+        SS.hurtBadge(f.hurt) + (f.provisional ? '<span class="ui-badge">Unranked</span>' : '') + (f.open ? '<span class="ui-badge good">Open to fights</span>' : '') + (f.demo ? '<span class="ui-badge">Demo</span>' : '') + '</div>' +
         (f.bio ? '<p class="bio">“' + esc(f.bio) + '”</p>' : '') + '</div>' +
         '<div class="cta">' + (d.can_challenge && ctx.me ? '<a class="ui-btn primary lg" href="#fight/call/' + esc(f.id) + '" data-go="fight/call/' + esc(f.id) + '">' + UI.icon('megaphone') + 'Call out</a>'
           : (f.me ? '<a class="ui-btn lg" href="#profile" data-go="profile">' + UI.icon('edit') + 'Edit card</a>' : (!ctx.me ? '<a class="ui-btn primary lg" href="#auth/signup" data-go="auth/signup">Join to fight</a>' : ''))) + '</div></section>' +
@@ -1799,7 +2126,7 @@
   var esc = UI.esc;
   function card(f) {
     return '<article class="ui-card fd-card">' + SS.avatar(f, 'lg') + '<div style="min-width:0"><a class="ss-ring" href="#fighter/' + esc(f.id) + '" data-go="fighter/' + esc(f.id) + '">' + esc(f.ring) + '</a>' +
-      '<div class="ss-sub" style="margin:4px 0 6px">' + (SS.place(f) || 'Somewhere') + ' · ' + esc(f.stance) + '</div>' + SS.tier(f.tier) + ' ' + SS.belts(f.belts) + '</div>' +
+      '<div class="ss-sub" style="margin:4px 0 6px">' + (SS.place(f) || 'Somewhere') + ' · ' + esc(f.stance) + '</div>' + SS.tier(f.tier) + ' ' + SS.belts(f.belts) + ' ' + SS.hurtBadge(f.hurt) + '</div>' +
       '<p class="bio">' + esc(f.bio || '') + '</p>' +
       '<div class="nums"><div><b>' + f.rating + '</b><span>Rating</span></div><div><b>' + f.record.w + '-' + f.record.l + '-' + f.record.d + '</b><span>Record</span></div>' +
       '<div><b>' + f.record.ko + '</b><span>KOs</span></div><div><b>' + (f.best_speed ? f.best_speed.toFixed(1) : '–') + '</b><span>Top m/s</span></div></div>' +
@@ -1881,14 +2208,16 @@
       var rank = '<div class="gy-rank"><div><b>' + (r.global ? '#' + r.global : '–') + '</b><span>World</span></div>' +
         (me.city ? '<div class="city"><b>' + (r.city ? '#' + r.city : '–') + '</b><span>' + esc(me.city) + '</span></div>' : '') + '</div>';
       view.innerHTML = '<div class="ui-wrap">' +
-        '<section class="gy-card">' + SS.avatar(me, 'xl') + '<div style="min-width:0;position:relative;z-index:1"><div class="ss-sub">' + esc(me.name) + (me.city ? ' · ' + SS.place(me) : '') + '</div>' +
-        '<h1>' + esc(me.ring) + '</h1><div class="ui-row" style="gap:6px">' + SS.tier(me.tier) + SS.belts(me.belts) +
+        '<section class="gy-card"><a class="gy-face" href="#locker" data-go="locker" title="Locker room">' + SS.avatar(me, 'xl') + '<span class="tag">Locker</span></a>' + '<div style="min-width:0;position:relative;z-index:1"><div class="ss-sub">' + esc(me.name) + (me.city ? ' · ' + SS.place(me) : '') + '</div>' +
+        '<h1>' + esc(me.ring) + '</h1><div class="ui-row" style="gap:6px">' + SS.tier(me.tier) + SS.belts(me.belts) + SS.hurtBadge(me.hurt) +
         (me.provisional ? '<span class="ui-badge">' + (3 - me.fights) + ' ranked bout' + (3 - me.fights === 1 ? '' : 's') + ' to get ranked</span>' : '') + '</div>' +
         '<div class="gy-nums"><div class="rate"><b>' + me.rating + '</b><span>Rating</span></div><div><b>' + me.record.w + '-' + me.record.l + '-' + me.record.d + '</b><span>W-L-D</span></div>' +
         '<div><b>' + me.record.ko + '</b><span>KOs</span></div><div><b>' + me.points + '</b><span>Points</span></div>' +
         '<div><b>' + (me.best_speed ? me.best_speed.toFixed(1) : '–') + '</b><span>Top m/s</span></div></div></div>' + rank + '</section>' +
         (d.needs_card ? '<div class="gy-nudge">' + UI.icon('glove') + '<p><b>Set up your fighter card.</b> A ring name and your city put you on the city board and let you call people out.</p>' +
           '<a class="ui-btn primary" href="#profile" data-go="profile">Fighter card</a></div>' : '') +
+        (!d.needs_card && !me.avatar ? '<div class="gy-nudge">' + SS.avatar(me) + '<p><b>Build your fighter in the locker room.</b> Pick the face, hair, kit and gloves opponents will see, and watch it take the hits.</p>' +
+          '<a class="ui-btn primary" href="#locker" data-go="locker">Locker room</a></div>' : '') +
         (d.to_answer.length ? '<div class="ss-h"><h2>In your corner</h2><span class="tape"></span><span class="ui-badge brand">' + d.to_answer.length + ' to answer</span></div>' +
           '<div class="gy-list">' + d.to_answer.map(function (b) { return SS.boutCard(b); }).join('') + '</div>' : '') +
         '<div class="ss-h"><h2>Pick a fight</h2><span class="tape"></span></div><div class="gy-ways">' + WAYS.map(function (w) {
@@ -2069,6 +2398,102 @@
   });
 })();
 
+/* ===== locker.html ===== */
+(function () {
+  var esc = UI.esc;
+  var GROUPS = [['Head', ['skin', 'face', 'marks']], ['Hair', ['hair', 'hairColor', 'brows', 'beard']], ['Face', ['eyes', 'eyeColor', 'nose', 'mouth']],
+                ['Kit', ['headgear', 'outfit', 'kit', 'gloves', 'pose', 'bg']]];
+  var PREVIEWS = [['now', 'Now'], ['none', 'Fresh'], ['fresh', 'Bout today'], ['war', 'After a war'], ['ko', 'Knocked out'], ['heal', 'Healing']];
+  var HURTS = { none: null, fresh: { level: 1.7, age: 1, hours_left: 23, label: 'Bruised' }, war: { level: 3.3, age: 2, hours_left: 22, label: 'Battered' },
+    ko: { level: 3.8, age: .5, hours_left: 24, ko: true, label: 'Battered' }, heal: { level: 1.2, age: 17, hours_left: 7, label: 'Bruised' } };
+
+  UI.page('locker', { title: 'Locker room', auth: 'user' }, function (view, ctx) {
+    var f = null, spec = null, glove = 'oxblood', prev = 'now', dirty = false;
+    var gloveKeys = Object.keys(SS.GLOVES);
+    view.innerHTML = '<div class="ui-wrap">' + SS.loading('Opening your locker…') + '</div>';
+
+    function part(key) {
+      if (key === 'gloves') return { label: 'Gloves', names: gloveKeys.map(function (g) { return SS.GLOVE_NAMES[g]; }), colors: gloveKeys.map(function (g) { return SS.GLOVES[g]; }) };
+      return SS.AVATAR[key];
+    }
+    function value(key) { return key === 'gloves' ? Math.max(0, gloveKeys.indexOf(glove)) : spec[key]; }
+    function setValue(key, v) {
+      var n = part(key).names.length;
+      v = (v + n) % n;
+      if (key === 'gloves') glove = gloveKeys[v]; else spec[key] = v;
+      dirty = true;
+    }
+    function hurt() { return prev === 'now' ? f.hurt : HURTS[prev]; }
+    function mirror() {
+      view.querySelector('[data-mirror]').innerHTML = SS.avatar({ id: f.id, avatar: spec, glove: glove, hurt: hurt() }, 'xl');
+      var h = hurt();
+      view.querySelector('[data-hurtnote]').innerHTML = prev === 'now'
+        ? (f.hurt ? SS.hurtBadge(f.hurt) + ' Bruises fade over 24 hours after a bout.' : 'No marks right now. Every bout leaves some for 24 hours.')
+        : (h ? 'Preview: ' + esc(h.ko ? 'knocked out minutes ago' : h.age > 12 ? 'a bout ' + h.age + ' hours ago, healing' : 'just after a bout') + '.' : 'Preview: no marks.');
+      view.querySelector('[data-save]').disabled = !dirty;
+    }
+    function rowHtml(key) {
+      var p = part(key), v = value(key);
+      return '<div class="lk-row" tabindex="0" data-key="' + key + '" role="group" aria-label="' + esc(p.label) + '"><span class="lbl">' + esc(p.label) + '</span>' +
+        '<button type="button" class="lk-arrow" data-step="-1" aria-label="Previous ' + esc(p.label) + '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+        '<span class="val" aria-live="polite">' + (p.colors ? '<i class="sw" style="background:' + p.colors[v] + '"></i>' : '') + '<span>' + esc(p.names[v]) + '</span><small>' + (v + 1) + '/' + p.names.length + '</small></span>' +
+        '<button type="button" class="lk-arrow" data-step="1" aria-label="Next ' + esc(p.label) + '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>';
+    }
+    function refreshRow(key) {
+      var el = view.querySelector('.lk-row[data-key="' + key + '"]');
+      var tmp = document.createElement('div'); tmp.innerHTML = rowHtml(key);
+      el.querySelector('.val').innerHTML = tmp.querySelector('.val').innerHTML;
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    }
+    function draw() {
+      view.innerHTML = '<div class="ui-wrap"><div class="ui-page-head"><div><h1>Locker room</h1><p class="muted">Build your fighter. Every bout leaves its marks for 24 hours.</p></div>' +
+        '<a class="ui-btn ghost" href="#profile" data-go="profile">' + UI.icon('back') + 'Fighter card</a></div>' +
+        '<div class="lk-grid"><aside class="lk-stage"><div class="lk-mirror" data-mirror></div>' +
+        '<div class="lk-plate"><b>' + esc(f.ring) + '</b><span>' + (SS.place(f) || 'Somewhere') + ' · ' + f.rating + '</span></div>' +
+        '<div class="lk-prev"><div class="ss-sub" style="margin-bottom:6px">Preview the damage</div><div class="ui-seg" data-prevs>' + PREVIEWS.map(function (p) {
+          return '<button type="button" data-prev="' + p[0] + '" class="' + (prev === p[0] ? 'on' : '') + '">' + p[1] + '</button>';
+        }).join('') + '</div><p class="lk-note" data-hurtnote style="margin-top:8px"></p></div>' +
+        '<div class="lk-acts"><button class="ui-btn" data-random>' + UI.icon('refresh') + 'Random</button><button class="ui-btn primary" data-save>' + UI.icon('check') + 'Save</button></div></aside>' +
+        '<div class="lk-groups">' + GROUPS.map(function (g) {
+          return '<section class="lk-group"><h3>' + g[0] + '</h3><div class="lk-rows">' + g[1].map(rowHtml).join('') + '</div></section>';
+        }).join('') + '<p class="lk-note">Tip: click a row and use the ← → keys. Your portrait shows next to your name everywhere: the gym, bouts, Find and the rankings.</p></div></div></div>';
+      mirror();
+    }
+    function step(key, d) { setValue(key, value(key) + d); refreshRow(key); mirror(); }
+    view.addEventListener('click', function (e) {
+      var a = e.target.closest('[data-step]');
+      if (a) { step(a.closest('[data-key]').getAttribute('data-key'), +a.getAttribute('data-step')); return; }
+      var p = e.target.closest('[data-prev]');
+      if (p) { prev = p.getAttribute('data-prev'); view.querySelectorAll('[data-prev]').forEach(function (b) { b.classList.toggle('on', b === p); }); mirror(); return; }
+      if (e.target.closest('[data-random]')) {
+        spec = SS.defaultFace(Math.random().toString(36));
+        glove = gloveKeys[Math.floor(Math.random() * gloveKeys.length)];
+        dirty = true;
+        SS.AVATAR_KEYS.concat(['gloves']).forEach(refreshRow); mirror(); return;
+      }
+      var s = e.target.closest('[data-save]');
+      if (s) {
+        UI.busy(s, UI.api('update_avatar', spec, glove)).then(function (r) {
+          f = Object.assign(f, r.fighter); dirty = false; mirror();
+          UI.toast('Looking sharp. Saved.', 'ok');
+        });
+      }
+    });
+    view.addEventListener('keydown', function (e) {
+      var row = e.target.closest && e.target.closest('.lk-row');
+      if (!row || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      e.preventDefault();
+      step(row.getAttribute('data-key'), e.key === 'ArrowLeft' ? -1 : 1);
+    });
+    return UI.api('get_fighter', ctx.me.id).then(function (r) {
+      f = r.fighter;
+      spec = Object.assign({}, f.avatar || SS.defaultFace(f.id));
+      glove = f.glove || 'oxblood';
+      draw();
+    });
+  });
+})();
+
 /* ===== mail.html ===== */
 (function () {
   var esc = UI.esc;
@@ -2107,11 +2532,13 @@
     var me = ctx.me;
     view.innerHTML = '<div class="ui-wrap">' + SS.loading() + '</div>';
     function preview(v) {
-      var f = { ring: v.ring_name || me.name, glove: v.glove, city: v.city, country: v.country };
+      var f = { ring: v.ring_name || me.name, glove: v.glove, city: v.city, country: v.country, id: card.id, avatar: card.avatar, hurt: card.hurt };
       view.querySelector('[data-prev]').innerHTML = SS.avatar(f, 'xl') + '<span class="ss-ring">' + esc(f.ring) + '</span>' +
         '<div class="ss-sub">' + (SS.place(f) || 'Somewhere') + ' · ' + esc(v.stance || 'orthodox') + '</div>' + (v.bio ? '<p>“' + esc(v.bio) + '”</p>' : '');
     }
+    var card = {};
     function draw(f) {
+      card = f;
       var hasCard = f.city || f.ring !== f.name;
       view.innerHTML = '<div class="ui-wrap"><div class="pf-head">' + SS.avatar(f, 'lg') + '<div><h1>' + esc(f.ring) + '</h1><div class="muted">' + esc(me.email) +
         (me.joined ? ' · member since ' + esc(UI.fmtDate(me.joined, { month: 'long', year: 'numeric' })) : '') + '</div></div>' +
@@ -2129,7 +2556,8 @@
         }).join('') + '</div></div>' +
         '<label class="ui-field full"><span>A line for your opponents <em>(optional)</em></span><input type="text" name="bio" maxlength="160" value="' + esc(f.bio) + '" placeholder="Desk job by day. Heavy bag by night."></label>' +
         '<label class="ui-check full"><input type="checkbox" name="open"' + (f.open ? ' checked' : '') + '> Open to fights: show me on Find and in suggestions</label>' +
-        '<div class="full"><button class="ui-btn primary" type="submit">' + UI.icon('check') + 'Save fighter card</button></div></form><div class="pf-prev" data-prev></div></section>' +
+        '<div class="full ui-row"><button class="ui-btn primary" type="submit">' + UI.icon('check') + 'Save fighter card</button>' +
+        '<a class="ui-btn" href="#locker" data-go="locker">' + UI.icon('user') + 'Locker room: build your face</a></div></form><div class="pf-prev" data-prev></div></section>' +
         '<div class="pf-grid"><form class="ui-card ui-stack" data-name><h3>Your name</h3><label class="ui-field"><span>Shown under your ring name</span>' +
         '<input type="text" name="name" value="' + esc(me.name) + '" maxlength="60" required></label><button class="ui-btn" type="submit">Save</button></form>' +
         '<div class="ui-card ui-stack"><h3>Appearance &amp; sound</h3><div data-theme-box></div>' +

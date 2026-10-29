@@ -144,11 +144,13 @@ def _headline(f, side):
     return ("You beat %s %s" % (other, how)).strip() if o == "win" else ("%s beat you %s" % (other, how)).strip()
 
 
-def finish(f):
-    """Both rounds are in: judge, then update ratings, records, points and mail."""
+def finish(f, when=None):
+    """Both rounds are in: judge, then update ratings, records, points, faces (bout damage) and mail.
+    `when` is the time of the bout (demo data fights in the past); default now."""
+    when = when or C.now()
     a_r, b_r = f["a_round"], f["b_round"]
     res = B.judge(a_r["stats"], b_r["stats"], a_r["score"] or 0, b_r["score"] or 0)
-    f.update(a_score=a_r["score"], b_score=b_r["score"], result=res, winner=res["winner"], status="done", finished=C.now())
+    f.update(a_score=a_r["score"], b_score=b_r["score"], result=res, winner=res["winner"], status="done", finished=when)
     ca, cb, kind, w = f["challenger"], f["opponent"], f["kind"], res["winner"]
     da = db = 0
     if kind in ("ranked", "open") and ca is not None and cb is not None:
@@ -173,7 +175,11 @@ def finish(f):
         if u is None:
             continue
         st = r["stats"] or {}
-        u.update(last_fight=C.now(), best_speed=max(u["best_speed"] or 0, st.get("top_speed", 0)),
+        other = b_r if side == "a" else a_r
+        o = _outcome(w, side)
+        hurt = min(B.HURT_MAX, F.hurt_level_at(u, when) + B.damage(o, res["method"], (other["stats"] or {}).get("punches", 0)))
+        u.update(hurt_level=round(hurt, 2), hurt_at=when, hurt_kind="ko" if (o == "loss" and res["method"] == "ko") else "")
+        u.update(last_fight=when, best_speed=max(u["best_speed"] or 0, st.get("top_speed", 0)),
                  total_punches=(u["total_punches"] or 0) + st.get("punches", 0))
         _log_points(u, pa if side == "a" else pb, KIND_LABELS.get(kind, "Bout") + ": " + _outcome(w, side), f)
         Inbox.send(u, "result", _headline(f, side), "Judges' scores are in. Open the bout to see the cards and the punch log.", f)
