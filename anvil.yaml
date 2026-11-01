@@ -695,16 +695,47 @@ db_schema:
     server: full
     title: Users
 metadata:
-  description: 'Virtual fight club: record a round with your phone or laptop camera, send it as a challenge, climb the global
-    and city rankings.'
+  description: 'Virtual fight club: record a shadow-boxing round with your phone or laptop camera, send it as a challenge,
+    and climb the global and city rankings.'
   logo_img: asset:icon-512.png
-  title: Subsudo · Virtual fight club
+  title: 'Subsudo: virtual fight club, shadow-box and climb the ranks'
 name: Subsudo
 native_deps:
-  head_html: "<script src=\"_/theme/legal-kit.js?v=070cea3c6a\"></script>\n<meta name=\"viewport\" content=\"width=device-width,\
-    \ initial-scale=1, viewport-fit=cover\">\n<meta name=\"theme-color\" content=\"#1c1a18\">\n<meta name=\"apple-mobile-web-app-capable\"\
-    \ content=\"yes\">\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"\
-    https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap\"\
+  head_html: "<script src=\"_/theme/legal-kit.js?v=070cea3c6a\"></script>\n<!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json\
+    \ and run seo.py, not here) -->\n<link rel=\"canonical\" href=\"https://subsudo.com/\">\n<meta name=\"robots\" content=\"\
+    index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1\">\n<meta name=\"keywords\" content=\"shadow\
+    \ boxing app, boxing workout game, virtual boxing challenge, punch tracker, boxing rankings, fight club game, cardio boxing\
+    \ at home, motion sensor boxing, hand tracking game\">\n<meta name=\"author\" content=\"Arkvital\">\n<meta property=\"\
+    og:type\" content=\"website\">\n<meta property=\"og:site_name\" content=\"Subsudo\">\n<meta property=\"og:title\" content=\"\
+    Subsudo: virtual fight club, shadow-box and climb the ranks\">\n<meta property=\"og:description\" content=\"Virtual fight\
+    \ club: record a shadow-boxing round with your phone or laptop camera, send it as a challenge, and climb the global and\
+    \ city rankings.\">\n<meta property=\"og:locale\" content=\"en_CA\">\n<meta property=\"og:url\" content=\"https://subsudo.com/\"\
+    >\n<meta property=\"og:image\" content=\"https://subsudo.com/_/theme/og-image.png\">\n<meta property=\"og:image:width\"\
+    \ content=\"1200\"><meta property=\"og:image:height\" content=\"630\">\n<meta property=\"og:image:alt\" content=\"Subsudo:\
+    \ Shadow-box a round, send the challenge, climb the rankings\">\n<meta name=\"twitter:card\" content=\"summary_large_image\"\
+    >\n<meta name=\"twitter:title\" content=\"Subsudo: virtual fight club, shadow-box and climb the ranks\">\n<meta name=\"\
+    twitter:description\" content=\"Virtual fight club: record a shadow-boxing round with your phone or laptop camera, send\
+    \ it as a challenge, and climb the global and city rankings.\">\n<meta name=\"twitter:image\" content=\"https://subsudo.com/_/theme/og-image.png\"\
+    >\n<link rel=\"alternate\" type=\"text/plain\" title=\"Subsudo for AI assistants\" href=\"https://subsudo.com/llms.txt\"\
+    >\n<script type=\"application/ld+json\">{\"@context\": \"https://schema.org\", \"@graph\": [{\"@type\": \"VideoGame\"\
+    , \"@id\": \"https://subsudo.com/#app\", \"name\": \"Subsudo\", \"url\": \"https://subsudo.com/\", \"description\": \"\
+    Virtual fight club: record a shadow-boxing round with your phone or laptop camera, send it as a challenge, and climb the\
+    \ global and city rankings.\", \"image\": \"https://subsudo.com/_/theme/og-image.png\", \"inLanguage\": \"en\", \"publisher\"\
+    : {\"@id\": \"https://arkvital.com/#org\"}, \"keywords\": \"shadow boxing app, boxing workout game, virtual boxing challenge,\
+    \ punch tracker, boxing rankings, fight club game, cardio boxing at home, motion sensor boxing, hand tracking game\",\
+    \ \"applicationCategory\": \"SportsApplication\", \"operatingSystem\": \"Any (web browser)\", \"browserRequirements\"\
+    : \"Requires JavaScript and a modern web browser\", \"featureList\": [\"Record a round with a phone in your fist or a\
+    \ laptop camera\", \"Send sealed call-outs; opponents answer whenever they like\", \"Three automatic judges score every\
+    \ bout\", \"Ratings, belts and world and city rankings\", \"Friend invites that work without an account\"], \"audience\"\
+    : {\"@type\": \"Audience\", \"audienceType\": \"Adults who like boxing workouts and friendly competition\"}}, {\"@type\"\
+    : \"WebSite\", \"@id\": \"https://subsudo.com/#site\", \"url\": \"https://subsudo.com/\", \"name\": \"Subsudo\", \"publisher\"\
+    : {\"@id\": \"https://arkvital.com/#org\"}}, {\"@type\": \"Organization\", \"@id\": \"https://arkvital.com/#org\", \"\
+    name\": \"Arkvital\", \"url\": \"https://arkvital.com\", \"email\": \"arkvital@outlook.com\", \"address\": {\"@type\"\
+    : \"PostalAddress\", \"addressLocality\": \"Montreal\", \"addressRegion\": \"QC\", \"addressCountry\": \"CA\"}}]}</script>\n\
+    <!-- seo:end -->\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<meta\
+    \ name=\"theme-color\" content=\"#1c1a18\">\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n<link rel=\"\
+    preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n\
+    <link href=\"https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap\"\
     \ rel=\"stylesheet\">\n<link id=\"ui-favicon\" rel=\"icon\" type=\"image/svg+xml\" href=\"_/theme/icon.svg?v=8b99759809\"\
     >\n<link rel=\"apple-touch-icon\" href=\"_/theme/icon-180.png?v=8b99759809\">\n<script>\n/* Keep our tab icon: Anvil adds\
     \ its own <link rel=\"icon\">, so drop any other icon link. */\n(function () {\n  function keep() {\n    var ours = document.getElementById('ui-favicon');\n\
