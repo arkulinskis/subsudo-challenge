@@ -701,7 +701,7 @@ metadata:
   title: 'Subsudo: virtual fight club, shadow-box and climb the ranks'
 name: Subsudo
 native_deps:
-  head_html: "<script src=\"_/theme/legal-kit.js?v=070cea3c6a\"></script>\n<!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json\
+  head_html: "<script src=\"_/theme/legal-kit.js?v=83125bbf28\"></script>\n<!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json\
     \ and run seo.py, not here) -->\n<link rel=\"canonical\" href=\"https://subsudo.com/\">\n<meta name=\"robots\" content=\"\
     index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1\">\n<meta name=\"keywords\" content=\"shadow\
     \ boxing app, boxing workout game, virtual boxing challenge, punch tracker, boxing rankings, fight club game, cardio boxing\
