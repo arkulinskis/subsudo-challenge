@@ -2327,28 +2327,24 @@
     bandLead: 'Pick a ring name and take Coach Bruno\'s welcome bout. Thirty seconds.'
   };
 
-  function heroArt() {
-    var bag = '<svg class="bag" viewBox="0 0 160 420"><defs><linearGradient id="lpb" x1="0" x2="1"><stop offset="0" stop-color="#4a0e0e"/><stop offset=".35" stop-color="#a42a22"/>' +
-      '<stop offset=".55" stop-color="#8e1b1b"/><stop offset="1" stop-color="#3d0b0b"/></linearGradient><linearGradient id="lpm" x1="0" x2="1"><stop offset="0" stop-color="#7d540f"/>' +
-      '<stop offset=".4" stop-color="#e8bd62"/><stop offset="1" stop-color="#7d540f"/></linearGradient></defs>' +
-      '<g stroke="#77706a" stroke-width="5" fill="none"><ellipse cx="80" cy="12" rx="5" ry="10"/><ellipse cx="80" cy="30" rx="10" ry="5"/><ellipse cx="80" cy="48" rx="5" ry="10"/></g>' +
-      '<path d="M80 58 44 84M80 58l36 26M80 58v26" stroke="#77706a" stroke-width="3"/>' +
-      '<rect x="28" y="80" width="104" height="300" rx="26" fill="url(#lpb)"/><ellipse cx="80" cy="86" rx="52" ry="12" fill="#2a0808"/>' +
-      '<rect x="28" y="118" width="104" height="12" fill="url(#lpm)"/><rect x="28" y="330" width="104" height="12" fill="url(#lpm)"/>' +
-      '<path d="M54 140v180M106 140v180" stroke="rgba(255,255,255,.12)" stroke-width="2" stroke-dasharray="6 5"/>' +
-      '<text x="80" y="232" transform="rotate(-90 80 232)" text-anchor="middle" dominant-baseline="middle" font-family="Anton, Impact, sans-serif" font-size="40" letter-spacing="4" fill="#f3e8d2" opacity=".92">SUBSUDO</text>' +
-      '<path d="M40 150c6 30 6 120 0 160" stroke="rgba(255,255,255,.18)" stroke-width="6" fill="none" stroke-linecap="round"/></svg>';
-    var duffel = '<svg class="duffel" viewBox="0 0 260 140"><path d="M70 52c0-40 120-40 120 0" fill="none" stroke="#1a1714" stroke-width="10" stroke-linecap="round"/>' +
-      '<path d="M86 52c0-26 88-26 88 0" fill="none" stroke="#3a3530" stroke-width="6"/>' +
-      '<rect x="14" y="46" width="232" height="86" rx="40" fill="#2b2622"/><circle cx="40" cy="89" r="34" fill="#221e1b"/><circle cx="220" cy="89" r="34" fill="#221e1b"/>' +
-      '<circle cx="40" cy="89" r="24" fill="none" stroke="#d09b35" stroke-width="3"/><circle cx="220" cy="89" r="24" fill="none" stroke="#d09b35" stroke-width="3"/>' +
-      '<path d="M58 58h144" stroke="#d09b35" stroke-width="3" stroke-dasharray="5 4"/><rect x="88" y="78" width="84" height="26" rx="3" fill="#8e1b1b"/>' +
-      '<text x="130" y="96" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="15" letter-spacing="2" fill="#f3e8d2">SUBSUDO</text></svg>';
-    return '<div class="lp-art" aria-hidden="true">' + bag +
-      '<div class="poster"><div class="band">FIGHT BY MAIL</div><div class="nm">The Hammer</div><div class="nn">MONTRÉAL · CA</div><div class="vs">VS</div>' +
-      '<div class="nm">Lagos Lightning</div><div class="nn">LAGOS · NG</div><div class="ft">ONE ROUND · 60 SECONDS<br>THREE JUDGES · NO EXCUSES</div></div>' +
-      '<div class="phone"><div class="ph">RIGHT HAND</div><div class="ring">23</div><div class="ty">UPPERCUT · 7.4 M/S</div><div class="hs"><span><b>14</b>LEFT</span><span><b>23</b>RIGHT</span></div></div>' +
-      duffel + '<div class="pow">POW!</div></div>';
+  // The main event: you in the red corner, a fighter from across the world in the blue, counting punches
+  function fightCard() {
+    return '<div class="lp-card" aria-hidden="true">' +
+      '<div class="lp-corner red"><span class="glove">🥊</span><div class="tag">Red corner</div><div class="nm">You</div><div class="pl">Your city</div>' +
+        '<div class="cnt"></div><div class="cl">punches landed</div></div>' +
+      '<div class="lp-mid"><div class="lp-vs">VS</div><div class="lp-clock"><b>RD 1</b> · 0:60</div><div class="lp-bell">Fight by mail</div></div>' +
+      '<div class="lp-corner blue"><span class="glove">🥊</span><div class="tag">Blue corner</div><div class="nm">Lagos Lightning</div><div class="pl">Lagos · NG</div>' +
+        '<div class="cnt"></div><div class="cl">punches landed</div></div></div>';
+  }
+
+  // The world board as a TV ticker (the list is doubled so the loop has no gap)
+  function tickerRow(rows) {
+    var esc = UI.esc;
+    var items = rows.map(function (r) { return '<span><b>#' + r.rank + '</b>' + esc(r.fighter.ring) + '<i>' + esc(r.value) + '</i></span>'; });
+    if (!items.length) items = ['<span><b>World belt</b>up for grabs</span>', '<span><b>City belts</b>waiting in every city</span>'];
+    items.push('<span><b>Three judges</b>power · volume · ring craft</span>');
+    var run = items.join('');
+    return '<span class="lbl">WORLD</span><div class="run">' + run + run + '</div>';
   }
 
   UI.page('landing', { title: 'Welcome' }, function (view, ctx) {
@@ -2357,11 +2353,11 @@
       : '<a class="ui-btn primary lg" href="#auth/signup" data-go="auth/signup">' + UI.icon('glove') + esc(C.cta) + '</a>' +
         '<a class="ui-btn lg" href="#auth" data-go="auth">I have an account</a>';
     view.innerHTML =
-      '<section class="lp-hero"><div class="ui-wrap"><div>' +
-        '<div class="eyebrow">' + esc(C.eyebrow) + '</div><h1 style="margin-top:18px">' + C.title + '</h1><p class="lp-lead">' + esc(C.lead) + '</p>' +
+      '<section class="lp-hero"><div class="ui-wrap">' +
+        '<div class="eyebrow">' + esc(C.eyebrow) + '</div><h1>' + C.title + '</h1><p class="lp-lead">' + esc(C.lead) + '</p>' +
         '<div class="lp-cta">' + primary + '</div>' +
         '<div class="lp-proof">' + C.proof.map(function (p) { return '<span>' + UI.icon('check') + esc(p) + '</span>'; }).join('') + '</div>' +
-      '</div>' + heroArt() + '</div></section>' +
+        fightCard() + '</div><div class="lp-ticker" aria-hidden="true" data-ticker>' + tickerRow([]) + '</div></section>' +
       '<section class="lp-section" id="how"><div class="ui-wrap"><div class="lp-head"><h2>' + esc(C.stepsTitle) + '</h2><p>' + esc(C.stepsLead) + '</p></div>' +
         '<div class="lp-steps">' + C.steps.map(function (s) { return '<div class="ui-card lp-step"><h3>' + esc(s[0]) + '</h3><p class="muted">' + esc(s[1]) + '</p></div>'; }).join('') + '</div></div></section>' +
       '<section class="lp-section" style="padding-top:0"><div class="ui-wrap"><div class="lp-head"><h2>' + esc(C.featuresTitle) + '</h2></div>' +
@@ -2374,6 +2370,8 @@
         (me ? '<a class="ui-btn lg" href="#home" data-go="home">Open the gym</a>' : '<a class="ui-btn lg" href="#auth/signup" data-go="auth/signup">' + esc(C.cta) + '</a>') +
       '</div></div></section>';
     return UI.apiQuiet('get_rankings', 'world').then(function (d) {
+      var tk = view.querySelector('[data-ticker]');
+      if (tk && d.rows.length) tk.innerHTML = tickerRow(d.rows.slice(0, 8));
       var el = view.querySelector('[data-board]');
       if (!el) return;
       el.innerHTML = d.rows.slice(0, 5).map(function (r) {
