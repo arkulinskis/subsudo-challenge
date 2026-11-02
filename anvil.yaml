@@ -701,7 +701,7 @@ metadata:
   title: 'Subsudo: virtual fight club, shadow-box and climb the ranks'
 name: Subsudo
 native_deps:
-  head_html: "<script src=\"_/theme/legal-kit.js?v=ac97713a3a\"></script>\n<!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json\
+  head_html: "<script src=\"_/theme/legal-kit.js?v=81ca96785b\"></script>\n<!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json\
     \ and run seo.py, not here) -->\n<link rel=\"canonical\" href=\"https://subsudo.com/\">\n<meta name=\"robots\" content=\"\
     index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1\">\n<meta name=\"keywords\" content=\"shadow\
     \ boxing app, boxing workout game, virtual boxing challenge, punch tracker, boxing rankings, fight club game, cardio boxing\
@@ -744,7 +744,7 @@ native_deps:
     })();\n</script>\n\n<!-- Prepsto feedback panel: every \"Submit feedback\" link and button opens it (it is the only feedback\
     \ channel). No floating button, no cookies, nothing loads until it is opened. Codes: APP_MAKER/prepsto-links.json -->\n\
     <script src=\"https://prepsto.com/_/theme/widget.js\" data-prepsto=\"z5yjpux\" data-button=\"false\" data-label=\"Submit\
-    \ feedback\" async></script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=3d90d60b0c\">\n<script src=\"_/theme/app.js?v=57fa14ae20\"\
+    \ feedback\" async></script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=3d90d60b0c\">\n<script src=\"_/theme/app.js?v=dda02ddb48\"\
     ></script>\n"
 package_name: Subsudo
 runtime_options:
