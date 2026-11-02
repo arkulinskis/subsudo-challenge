@@ -11,7 +11,7 @@ and city rankings move. Bouts arrive as messages (Mail), so nothing has to be li
 ## What it does
 
 **For visitors:** a landing page (gym scene, how it works, live World top 5, FAQ), public rankings (`#rankings`) and
-fighter pages (`#fighter/<id>`), sign-up with email and password, Privacy & Terms, and **friend invites**: anyone with an
+fighter pages (`#fighter/<id>`), sign-up with email and password or Google, Privacy & Terms, and **friend invites**: anyone with an
 invite link (`#invite/<token>`) can fight back without an account, see the result at once, and claim the bout onto their
 record if they sign up later on the same device.
 
@@ -74,7 +74,7 @@ inviter) 12 / 18 / 6 / 2; bag work 1 (5 a day).
 ## Setting it up in Anvil (once)
 
 1. In the Anvil editor: **Create app → Clone from GitHub**, and paste `https://github.com/arkulinskis/subsudo-challenge`.
-2. **Users** service: email + password, sign-up allowed (already set in `anvil.yaml`; check it).
+2. **Users** service: email + password and "Continue with Google", sign-up allowed (already set in `anvil.yaml`; check it).
 3. Open the app in the editor. If it shows a **Schema Mismatch** alert, choose **"The schema of the source code is correct"** so Anvil creates the tables.
 4. **Run** it and sign up with **arkulinskis@gmail.com** straight away (that account becomes the admin).
 5. **Publish** (Publish → public URL, or your own domain). Motion sensors and the camera need HTTPS (Anvil gives it).
