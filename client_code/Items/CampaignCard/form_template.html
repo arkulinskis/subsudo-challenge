@@ -1,0 +1,11 @@
+<div class="ui-card tight ad-camp">
+  <div class="ui-row between"><anvil-component type="Label" name="title" prop:role='["strong"]' bind:text="self.item['title']"></anvil-component><anvil-component type="Label" name="status" prop:role='["badge"]' bind:text="self.item['status']"></anvil-component></div>
+  <anvil-component type="Label" name="meta" prop:role='["fine-print"]'></anvil-component>
+  <div class="nums">
+    <div><anvil-component type="Label" name="sent" prop:role='["num"]'></anvil-component><span>Sent</span></div>
+    <div><anvil-component type="Label" name="answered" prop:role='["num"]'></anvil-component><span>Fought</span></div>
+    <div><anvil-component type="Label" name="house_wins" prop:role='["num"]'></anvil-component><span>House won</span></div>
+    <div><anvil-component type="Label" name="member_pct" prop:role='["num"]'></anvil-component><span>Members won</span></div>
+  </div>
+  <div anvil:name="cancel_box"><anvil-component type="Button" name="cancel_button" prop:text="Cancel unanswered" prop:role='["btn", "btn-sm", "btn-danger", "ic-x"]'></anvil-component></div>
+</div>

@@ -1,0 +1,36 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-narrow" anvil:name="closed_part">
+        <div class="ui-empty"><i class="ic ic-lock"></i><h3>This link is closed</h3><anvil-component type="Label" name="closed_text"></anvil-component><a class="ui-btn primary" href="#landing">What is Subsudo?</a></div>
+      </div>
+      <div class="ui-narrow" anvil:name="mine_part">
+        <div class="ui-empty"><i class="ic ic-send"></i><h3>This is your own invite</h3><p>Send this link to a friend. When they fight back, the result lands in your Mail.</p>
+          <anvil-component type="Button" name="copy_button" prop:text="Copy the link" prop:role='["btn", "btn-primary", "ic-copy"]'></anvil-component></div>
+      </div>
+      <div anvil:name="fight_part">
+        <div class="iv-hero">
+          <h1><anvil-component type="Label" name="hero_ring" prop:role='["iv-ring"]'></anvil-component> wants a round with you</h1>
+          <anvil-component type="Label" name="hero_text" prop:role='["muted"]'></anvil-component>
+        </div>
+        <anvil-component type="Subsudo.Components.Poster" name="poster"></anvil-component>
+        <anvil-component type="Label" name="words" prop:role='["fg-words"]'></anvil-component>
+        <div class="ui-card iv-name">
+          <label class="ui-field"><span>Your fighting name</span><anvil-component type="TextBox" name="name_box"></anvil-component></label>
+        </div>
+        <anvil-component type="Subsudo.Components.Recorder" name="recorder"></anvil-component>
+      </div>
+      <div class="ui-narrow" anvil:name="result_part">
+        <anvil-component type="Subsudo.Components.Poster" name="result_poster"></anvil-component>
+        <div class="ui-card"><anvil-component type="Subsudo.Components.Result" name="result"></anvil-component></div>
+        <div class="ui-card fg-gap"><anvil-component type="Subsudo.Components.VsBars" name="bars"></anvil-component></div>
+        <div class="ui-card iv-after fg-gap">
+          <anvil-component type="Label" name="after_title" prop:role='["iv-after-title"]'></anvil-component>
+          <anvil-component type="Label" name="after_text" prop:role='["muted"]'></anvil-component>
+          <a class="ui-btn primary lg" anvil:name="join_link" href="#auth/signup"><i class="ic ic-glove"></i>Join Subsudo, it's free</a>
+          <a class="ui-btn primary lg" anvil:name="gym_link" href="#home">Open the gym</a>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

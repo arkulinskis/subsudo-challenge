@@ -1,0 +1,18 @@
+---
+custom_component: true
+help_text: 'Where a fighter is from: the city and a small country-code chip.'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A fighter dict (city, country)
+  name: fighter
+  type: object
+- default_value: ''
+  description: Shown when the fighter has no city or country
+  name: empty
+  type: string
+toolbox_item:
+  group: Subsudo
+  title: Place
+---
+<span class="ss-place"><anvil-component type="Label" name="city"></anvil-component><anvil-component type="Label" name="cc" prop:role='["cc"]'></anvil-component></span>

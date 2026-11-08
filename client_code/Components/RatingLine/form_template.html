@@ -1,0 +1,17 @@
+---
+custom_component: true
+help_text: 'A fighter''s rating over their ranked bouts (SS.ratingLine).'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: 'The history list [{rating, delta}], oldest first'
+  name: history
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Rating line
+---
+<div class="fp-line-host">
+  <div class="fp-line" anvil:dom-node="box"></div>
+  <anvil-component type="Label" name="empty" prop:text="The rating line appears after two ranked bouts." prop:role='["fine-print"]'></anvil-component>
+</div>

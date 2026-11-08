@@ -1,0 +1,39 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-page-head">
+        <div><h1>Locker room</h1><p class="muted">Build your fighter. Every bout leaves its marks for 24 hours.</p></div>
+        <a class="ui-btn ghost" href="#profile"><i class="ic ic-back"></i>Fighter card</a>
+      </div>
+      <div class="lk-grid">
+        <aside class="lk-stage">
+          <div class="lk-mirror"><anvil-component type="Subsudo.Components.Avatar" name="mirror" prop:size="xl"></anvil-component></div>
+          <div class="lk-plate"><anvil-component type="Label" name="plate_ring" prop:role='["lk-plate-ring"]'></anvil-component><div class="lk-plate-sub"><anvil-component type="Subsudo.Components.Place" name="plate_place" prop:empty="Somewhere"></anvil-component><anvil-component type="Label" name="plate_rating"></anvil-component></div></div>
+          <div class="lk-prev">
+            <div class="ss-sub lk-prev-title">Preview the damage</div>
+            <div class="ui-seg" role="group" aria-label="Preview the damage">
+              <button type="button" anvil:name="pv_now" data-prev="now" anvil:on-dom:click="self.prev_click">Now</button>
+              <button type="button" anvil:name="pv_none" data-prev="none" anvil:on-dom:click="self.prev_click">Fresh</button>
+              <button type="button" anvil:name="pv_fresh" data-prev="fresh" anvil:on-dom:click="self.prev_click">Bout today</button>
+              <button type="button" anvil:name="pv_war" data-prev="war" anvil:on-dom:click="self.prev_click">After a war</button>
+              <button type="button" anvil:name="pv_ko" data-prev="ko" anvil:on-dom:click="self.prev_click">Knocked out</button>
+              <button type="button" anvil:name="pv_heal" data-prev="heal" anvil:on-dom:click="self.prev_click">Healing</button>
+            </div>
+            <anvil-component type="Label" name="hurt_note" prop:role='["lk-note"]'></anvil-component>
+          </div>
+          <div class="lk-acts">
+            <anvil-component type="Button" name="random_button" prop:text="Random" prop:role='["btn", "ic-refresh"]'></anvil-component>
+            <anvil-component type="Button" name="save_button" prop:text="Save" prop:role='["btn", "btn-primary", "ic-check"]'></anvil-component>
+          </div>
+        </aside>
+        <div class="lk-groups">
+          <section class="lk-group"><h2 class="lk-h">Head</h2><anvil-component type="RepeatingPanel" name="g_head" prop:item_template="Subsudo.Items.PartRow" prop:role='["lk-rows"]'></anvil-component></section>
+          <section class="lk-group"><h2 class="lk-h">Hair</h2><anvil-component type="RepeatingPanel" name="g_hair" prop:item_template="Subsudo.Items.PartRow" prop:role='["lk-rows"]'></anvil-component></section>
+          <section class="lk-group"><h2 class="lk-h">Face</h2><anvil-component type="RepeatingPanel" name="g_face" prop:item_template="Subsudo.Items.PartRow" prop:role='["lk-rows"]'></anvil-component></section>
+          <section class="lk-group"><h2 class="lk-h">Kit</h2><anvil-component type="RepeatingPanel" name="g_kit" prop:item_template="Subsudo.Items.PartRow" prop:role='["lk-rows"]'></anvil-component></section>
+          <p class="lk-note">Tip: click a row and use the ← → keys. Your portrait shows next to your name everywhere: the gym, bouts, Find and the rankings.</p>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

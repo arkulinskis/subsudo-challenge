@@ -1,0 +1,64 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-empty" anvil:name="gone"><i class="ic ic-lock"></i><h3>This bout isn't here</h3><p>It may have been removed, or it isn't one of yours.</p><a class="ui-btn" href="#mail">Back to Mail</a></div>
+      <div anvil:name="main">
+        <div class="bt-meta">
+          <a class="ui-btn ghost sm" href="#mail"><i class="ic ic-back"></i>Mail</a>
+          <anvil-component type="Label" name="kind" prop:role='["badge"]'></anvil-component>
+          <span class="ui-badge"><i class="ic ic-timer"></i><anvil-component type="Label" name="secs"></anvil-component></span>
+          <anvil-component type="Label" name="campaign" prop:role='["badge", "badge-brass"]'></anvil-component>
+          <anvil-component type="Label" name="outcome"></anvil-component>
+          <anvil-component type="Label" name="status" prop:role='["fine-print"]'></anvil-component>
+          <anvil-component type="Label" name="demo" prop:text="Demo" prop:role='["badge"]'></anvil-component>
+        </div>
+        <h1 class="ui-sr" anvil:name="sr_title_box"><anvil-component type="Label" name="sr_title"></anvil-component></h1>
+        <anvil-component type="Subsudo.Components.Poster" name="poster"></anvil-component>
+
+        <div anvil:name="done_part">
+          <div class="bt-cta">
+            <a class="ui-btn primary" anvil:name="rematch_link" href="#home"><i class="ic ic-refresh"></i>Rematch</a>
+            <a class="ui-btn" href="#find"><i class="ic ic-megaphone"></i>Find another fight</a>
+          </div>
+          <div class="bt-grid">
+            <div class="ui-card"><anvil-component type="Subsudo.Components.Result" name="result"></anvil-component></div>
+            <div class="ui-card"><h2 class="card-h">Tale of the tape</h2><anvil-component type="Subsudo.Components.VsBars" name="bars"></anvil-component></div>
+          </div>
+          <div class="ui-card bt-gap"><h2 class="card-h">Punch log</h2><anvil-component type="Subsudo.Components.Timeline" name="timeline"></anvil-component></div>
+          <div class="ui-card bt-gap">
+            <h2 class="card-h">Words</h2>
+            <div class="bt-words">
+              <div class="bt-quote a" anvil:name="a_quote"><anvil-component type="Label" name="a_quote_who" prop:role='["bt-who"]'></anvil-component><anvil-component type="Label" name="a_quote_text" prop:role='["bt-text"]'></anvil-component></div>
+              <div class="bt-quote b" anvil:name="b_quote"><anvil-component type="Label" name="b_quote_who" prop:role='["bt-who"]'></anvil-component><anvil-component type="Label" name="b_quote_text" prop:role='["bt-text"]'></anvil-component></div>
+              <div class="bt-say" anvil:name="say_part">
+                <anvil-component type="TextBox" name="words_box" prop:placeholder="Respect, or a rematch call…"></anvil-component>
+                <anvil-component type="Button" name="say_button" prop:text="Say it" prop:role='["btn", "btn-primary", "ic-send"]'></anvil-component>
+              </div>
+              <anvil-component type="Label" name="no_words" prop:text="No words were exchanged." prop:role='["fine-print"]'></anvil-component>
+            </div>
+          </div>
+        </div>
+
+        <div anvil:name="answer_part">
+          <anvil-component type="Label" name="answer_words" prop:role='["fg-words"]'></anvil-component>
+          <div class="bt-cta">
+            <a class="ui-btn primary lg" anvil:name="answer_link" href="#home"><i class="ic ic-glove"></i><anvil-component type="Label" name="answer_text"></anvil-component></a>
+            <anvil-component type="Button" name="decline_button" prop:text="Duck it" prop:role='["btn", "btn-lg", "btn-ghost"]'></anvil-component>
+          </div>
+          <anvil-component type="Label" name="answer_note" prop:role='["fine-print", "center"]'></anvil-component>
+        </div>
+
+        <div class="ui-card bt-wait" anvil:name="wait_part">
+          <anvil-component type="Label" name="wait_title" prop:role='["card-title"]'></anvil-component>
+          <anvil-component type="Label" name="wait_text" prop:role='["muted"]'></anvil-component>
+          <div class="ui-row fg-center">
+            <anvil-component type="Button" name="share_button" prop:text="Share the link again" prop:role='["btn", "btn-primary", "ic-send"]'></anvil-component>
+            <anvil-component type="Button" name="cancel_button" prop:text="Cancel the bout" prop:role='["btn", "btn-danger", "ic-x"]'></anvil-component>
+          </div>
+        </div>
+
+        <div class="ui-empty" anvil:name="over_part"><i class="ic ic-info"></i><anvil-component type="Label" name="over_title" prop:role='["card-title"]'></anvil-component><p>This bout is over without a result.</p></div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

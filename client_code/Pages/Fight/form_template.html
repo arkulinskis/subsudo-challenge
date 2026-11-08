@@ -1,0 +1,88 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div anvil:name="setup_part">
+        <div anvil:name="answer_head">
+          <anvil-component type="Label" name="answer_meta" prop:role='["ss-sub", "fg-meta"]'></anvil-component>
+          <anvil-component type="Subsudo.Components.Poster" name="answer_poster"></anvil-component>
+          <anvil-component type="Label" name="answer_words" prop:role='["fg-words"]'></anvil-component>
+          <anvil-component type="Label" name="answer_note" prop:role='["fg-note"]'></anvil-component>
+        </div>
+        <div class="fg-head" anvil:name="call_head">
+          <anvil-component type="Subsudo.Components.Avatar" name="call_av" prop:size="lg"></anvil-component>
+          <div>
+            <div class="ss-sub fg-call-sub"><span>Calling out ·</span><anvil-component type="Subsudo.Components.Place" name="call_place" prop:empty="Somewhere"></anvil-component></div>
+            <anvil-component type="Label" name="call_ring" prop:role='["fg-title"]'></anvil-component>
+            <div class="ui-row fg-call-line"><anvil-component type="Subsudo.Components.Tags" name="call_tags"></anvil-component><anvil-component type="Label" name="call_line" prop:role='["muted"]'></anvil-component></div>
+          </div>
+        </div>
+        <div anvil:name="plain_head">
+          <div class="ss-h ss-h-top"><anvil-component type="Label" name="title" prop:role='["fg-title"]'></anvil-component></div>
+          <anvil-component type="Label" name="lead" prop:role='["muted", "fg-lead"]'></anvil-component>
+        </div>
+        <div class="ui-card fg-setup" anvil:name="setup_card">
+          <label class="ui-field" anvil:name="friend_field"><span>Friend's name <em>(optional, just for you)</em></span>
+            <anvil-component type="TextBox" name="friend_box" prop:placeholder="Sam"></anvil-component>
+          </label>
+          <label class="ui-field" anvil:name="words_field"><span>Words for your opponent <em>(optional)</em></span>
+            <anvil-component type="TextBox" name="words_box"></anvil-component>
+          </label>
+          <anvil-component type="CheckBox" name="city_only_box"></anvil-component>
+        </div>
+        <anvil-component type="Subsudo.Components.Recorder" name="recorder"></anvil-component>
+      </div>
+
+      <div class="ui-narrow" anvil:name="closed_part">
+        <div class="ui-empty"><i class="ic ic-lock"></i><h3>This bout is closed</h3><anvil-component type="Label" name="closed_text"></anvil-component><a class="ui-btn" anvil:name="closed_link" href="#home">Open the bout</a></div>
+      </div>
+
+      <div class="ui-narrow" anvil:name="reveal_part">
+        <anvil-component type="Subsudo.Components.Poster" name="reveal_poster"></anvil-component>
+        <div class="ui-card"><anvil-component type="Subsudo.Components.Result" name="reveal_result"></anvil-component></div>
+        <div class="ui-card fg-gap"><anvil-component type="Subsudo.Components.VsBars" name="reveal_bars"></anvil-component></div>
+        <div class="ui-row fg-acts">
+          <a class="ui-btn primary" anvil:name="reveal_log" href="#home"><i class="ic ic-ranks"></i>Punch log &amp; words</a>
+          <a class="ui-btn" anvil:name="reveal_rematch" href="#home"><i class="ic ic-refresh"></i>Rematch</a>
+          <a class="ui-btn ghost" href="#home">Back to the gym</a>
+        </div>
+      </div>
+
+      <div class="ui-narrow" anvil:name="sent_part">
+        <div class="ui-card fg-done">
+          <i class="ic ic-send fg-big-ic"></i>
+          <anvil-component type="Label" name="sent_title" prop:role='["fg-done-title"]'></anvil-component>
+          <anvil-component type="Label" name="sent_text" prop:role='["muted"]'></anvil-component>
+          <div class="fg-share" anvil:name="share_part">
+            <div class="link">
+              <anvil-component type="TextBox" name="link_box"></anvil-component>
+              <anvil-component type="Button" name="copy_button" prop:text="Copy" prop:role='["btn", "btn-primary", "ic-copy"]'></anvil-component>
+            </div>
+            <div class="ui-row fg-center">
+              <anvil-component type="Button" name="native_button" prop:text="Share" prop:role='["btn", "ic-send"]'></anvil-component>
+              <a class="ui-btn" anvil:name="wa_link" target="_blank" rel="noopener" href="https://wa.me/">WhatsApp</a>
+              <a class="ui-btn" anvil:name="sms_link" href="sms:">SMS</a>
+              <a class="ui-btn" anvil:name="mail_link" href="mailto:">Email</a>
+            </div>
+          </div>
+          <div class="ui-row fg-center">
+            <a class="ui-btn primary" href="#home">Back to the gym</a>
+            <a class="ui-btn" href="#find">Call out someone else</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui-narrow" anvil:name="trained_part">
+        <div class="ui-card fg-done">
+          <i class="ic fg-big-ic" anvil:name="trained_icon"></i>
+          <anvil-component type="Label" name="trained_title" prop:role='["fg-done-title"]'></anvil-component>
+          <anvil-component type="Label" name="trained_score" prop:role='["fg-score"]'></anvil-component>
+          <anvil-component type="Label" name="trained_text" prop:role='["muted"]'></anvil-component>
+          <div class="ui-row fg-center">
+            <anvil-component type="Button" name="again_button" prop:text="Another round" prop:role='["btn", "btn-primary", "ic-refresh"]'></anvil-component>
+            <a class="ui-btn" href="#find">Find a real fight</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

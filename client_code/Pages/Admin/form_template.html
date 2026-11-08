@@ -1,0 +1,120 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-page-head"><div><h1>Admin</h1><p class="muted">Only admins see this page.</p></div></div>
+      <nav class="ui-tabs" aria-label="Admin">
+        <a href="#admin/overview" anvil:name="tab_overview"><i class="ic ic-grid"></i>Overview</a>
+        <a href="#admin/challenges" anvil:name="tab_challenges"><i class="ic ic-house"></i>Challenges</a>
+        <a href="#admin/log" anvil:name="tab_log"><i class="ic ic-ranks"></i>Fight log</a>
+        <a href="#admin/feedback" anvil:name="tab_feedback"><i class="ic ic-inbox"></i>Feedback</a>
+        <a href="#admin/users" anvil:name="tab_users"><i class="ic ic-users"></i>Users</a>
+        <a href="#admin/demo" anvil:name="tab_demo"><i class="ic ic-database"></i>Demo data</a>
+      </nav>
+
+      <div anvil:name="overview_part">
+        <div class="ad-stats">
+          <a class="ui-card ui-stat ad-stat" href="#admin/users"><anvil-component type="Label" name="s_users" prop:role='["stat-num"]'></anvil-component><span>people signed up</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/users"><anvil-component type="Label" name="s_admins" prop:role='["stat-num"]'></anvil-component><anvil-component type="Label" name="s_admins_label" prop:role='["fine-print"]'></anvil-component></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/feedback"><anvil-component type="Label" name="s_feedback" prop:role='["stat-num"]'></anvil-component><span>new feedback</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/log"><anvil-component type="Label" name="s_fights" prop:role='["stat-num"]'></anvil-component><span>bouts fought</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/log"><anvil-component type="Label" name="s_waiting" prop:role='["stat-num"]'></anvil-component><span>bouts waiting</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/log"><anvil-component type="Label" name="s_rounds" prop:role='["stat-num"]'></anvil-component><span>rounds recorded</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/log"><anvil-component type="Label" name="s_flagged" prop:role='["stat-num"]'></anvil-component><span>rounds flagged</span></a>
+          <a class="ui-card ui-stat ad-stat" href="#admin/challenges"><anvil-component type="Label" name="s_campaigns" prop:role='["stat-num"]'></anvil-component><span>active challenges</span></a>
+        </div>
+        <anvil-component type="Label" name="demo_line" prop:role='["fine-print", "ad-demo-line"]'></anvil-component>
+      </div>
+
+      <div anvil:name="challenges_part">
+        <div class="ad-cols">
+          <div class="ui-card ad-form">
+            <div class="full"><h2 class="card-h">Send a house challenge</h2><p class="muted small ad-sub">For members who have nobody to fight. A house fighter throws one round (the same for everyone); each member gets a bout in their Mail.</p></div>
+            <label class="ui-field full"><span>Title</span><anvil-component type="TextBox" name="c_title" prop:placeholder="Friday Fight Night"></anvil-component></label>
+            <label class="ui-field"><span>House fighter</span><anvil-component type="DropDown" name="c_house"></anvil-component></label>
+            <label class="ui-field"><span>How hard they hit</span><anvil-component type="DropDown" name="c_level"></anvil-component></label>
+            <label class="ui-field"><span>Round</span><anvil-component type="DropDown" name="c_secs"></anvil-component></label>
+            <label class="ui-field"><span>Bonus for a win</span><anvil-component type="TextBox" name="c_bonus" prop:type="number" prop:text="10"></anvil-component></label>
+            <label class="ui-field"><span>Days to answer</span><anvil-component type="TextBox" name="c_days" prop:type="number" prop:text="7"></anvil-component></label>
+            <label class="ui-field full"><span>Message <em>(optional)</em></span><anvil-component type="TextArea" name="c_message" prop:placeholder="Big Dee is in the building. 60 seconds, no excuses."></anvil-component></label>
+            <div class="ui-field full" role="radiogroup" aria-label="Who gets it"><span>Who gets it</span>
+              <div class="ad-aud">
+                <anvil-component type="RadioButton" name="a_all" prop:text="Everyone" prop:group_name="aud" prop:value="all" prop:selected="true"></anvil-component>
+                <div class="ad-aud-line"><anvil-component type="RadioButton" name="a_idle" prop:text="No bout in the last" prop:group_name="aud" prop:value="idle"></anvil-component><anvil-component type="TextBox" name="idle_days" prop:type="number" prop:text="14" prop:role='["ad-num"]'></anvil-component><span>days</span></div>
+                <anvil-component type="RadioButton" name="a_never" prop:text="Never fought" prop:group_name="aud" prop:value="never"></anvil-component>
+                <div class="ad-aud-line"><anvil-component type="RadioButton" name="a_city" prop:text="Fighters in" prop:group_name="aud" prop:value="city"></anvil-component><anvil-component type="DropDown" name="city_key" prop:role='["ad-city"]'></anvil-component></div>
+                <anvil-component type="RadioButton" name="a_picked" prop:text="Picked fighters" prop:group_name="aud" prop:value="picked"></anvil-component>
+                <div anvil:name="pick_part" class="ad-pick">
+                  <anvil-component type="TextBox" name="member_box" prop:type="search" prop:placeholder="Find by ring name, name or email"></anvil-component>
+                  <anvil-component type="RepeatingPanel" name="found" prop:item_template="Subsudo.Items.MemberChip" prop:role='["ad-chips"]'></anvil-component>
+                  <anvil-component type="RepeatingPanel" name="picked" prop:item_template="Subsudo.Items.MemberChip" prop:role='["ad-chips"]'></anvil-component>
+                </div>
+              </div>
+            </div>
+            <div class="full ad-count-box"><anvil-component type="Label" name="aud_count" prop:role='["ad-count"]'></anvil-component><anvil-component type="Label" name="aud_sample" prop:role='["fine-print"]'></anvil-component></div>
+            <div class="full"><anvil-component type="Button" name="send_button" prop:text="Send" prop:role='["btn", "btn-primary", "ic-send"]'></anvil-component></div>
+          </div>
+          <div>
+            <h2 class="card-h">Sent challenges</h2>
+            <anvil-component type="RepeatingPanel" name="campaigns" prop:item_template="Subsudo.Items.CampaignCard" prop:role='["ui-list"]'></anvil-component>
+            <div class="ui-empty" anvil:name="no_campaigns"><i class="ic ic-house"></i><h3>None yet</h3></div>
+          </div>
+        </div>
+      </div>
+
+      <div anvil:name="log_part">
+        <div class="ui-row ad-logf">
+          <anvil-component type="TextBox" name="log_q" prop:type="search" prop:placeholder="Fighter name" prop:role='["ad-q"]'></anvil-component>
+          <anvil-component type="DropDown" name="log_status" prop:role='["ad-sel"]'></anvil-component>
+          <anvil-component type="DropDown" name="log_kind" prop:role='["ad-sel"]'></anvil-component>
+          <anvil-component type="Button" name="log_button" prop:text="Filter" prop:role='["btn", "ic-filter"]'></anvil-component>
+          <anvil-component type="Label" name="log_count" prop:role='["fine-print"]'></anvil-component>
+          <span class="ui-spacer"></span>
+          <anvil-component type="Button" name="csv_button" prop:text="CSV" prop:role='["btn", "ic-download"]'></anvil-component>
+        </div>
+        <div class="ad-logwrap" tabindex="0" aria-label="Fight log">
+          <div class="ad-log-row ad-log-head"><b>When</b><b>Kind</b><b>A</b><b>B</b><b class="opt">Devices</b><b>Score</b><b>Result</b><b class="opt">Flags</b></div>
+          <anvil-component type="RepeatingPanel" name="log_rows" prop:item_template="Subsudo.Items.LogRow"></anvil-component>
+        </div>
+      </div>
+
+      <div anvil:name="feedback_part">
+        <div class="ui-row ad-filter">
+          <div class="ui-seg">
+            <anvil-component type="Button" name="f_new" prop:text="New" prop:role='["seg"]'></anvil-component>
+            <anvil-component type="Button" name="f_read" prop:text="Read" prop:role='["seg"]'></anvil-component>
+            <anvil-component type="Button" name="f_done" prop:text="Done" prop:role='["seg"]'></anvil-component>
+            <anvil-component type="Button" name="f_all" prop:text="All" prop:role='["seg"]'></anvil-component>
+          </div>
+        </div>
+        <anvil-component type="RepeatingPanel" name="feedback_panel" prop:item_template="Subsudo.Items.FeedbackRow" prop:role='["ad-fb"]'></anvil-component>
+        <div class="ui-empty" anvil:name="no_feedback">
+          <i class="ic ic-inbox"></i>
+          <h2>No messages here</h2>
+          <p>New feedback goes to Prepsto (prepsto.com). Older messages and requests from the app show up here.</p>
+        </div>
+      </div>
+
+      <div anvil:name="users_part">
+        <div class="ui-row ad-search">
+          <anvil-component type="TextBox" name="search_box" prop:placeholder="Search by name or email" prop:role='["ad-search-box"]'></anvil-component>
+          <anvil-component type="Button" name="search_button" prop:text="Search" prop:role='["btn", "ic-search"]'></anvil-component>
+          <anvil-component type="Label" name="users_count" prop:role='["fine-print"]'></anvil-component>
+        </div>
+        <div class="ad-table ad-users-head"><b>Name</b><b>Email</b><b>Joined</b><b>Admin</b><b>Active</b></div>
+        <anvil-component type="RepeatingPanel" name="users_panel" prop:item_template="Subsudo.Items.UserRow"></anvil-component>
+      </div>
+
+      <div anvil:name="demo_part">
+        <div class="ui-card ui-narrow ad-demo">
+          <h2 class="card-h">Demo data</h2>
+          <p class="muted">Example people and content, so the app never looks empty for the first visitors. Demo rows are flagged, so removing them never touches real data. Once removed, it stays removed until you load it again.</p>
+          <anvil-component type="Label" name="demo_status"></anvil-component>
+          <div class="ui-row">
+            <anvil-component type="Button" name="demo_load_button" prop:text="Load demo data" prop:role='["btn", "btn-primary", "ic-refresh"]'></anvil-component>
+            <anvil-component type="Button" name="demo_remove_button" prop:text="Remove demo data" prop:role='["btn", "btn-danger", "ic-trash"]'></anvil-component>
+          </div>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

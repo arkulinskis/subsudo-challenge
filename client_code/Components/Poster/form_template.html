@@ -1,0 +1,32 @@
+---
+custom_component: true
+help_text: 'The fight poster: both fighters, VS, their scores (sealed until the answer) and what the bout earned them.'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A bout dict from the server
+  name: bout
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Poster
+---
+<div class="ss-poster-host">
+  <div class="ss-poster">
+    <div class="ss-pside">
+      <anvil-component type="Subsudo.Components.Avatar" name="a_av" prop:size="lg"></anvil-component>
+      <a class="ss-ring" anvil:name="a_link"><anvil-component type="Label" name="a_name"></anvil-component></a>
+      <anvil-component type="Label" name="a_sub" prop:role='["ss-sub"]'></anvil-component>
+      <anvil-component type="Label" name="a_score" prop:role='["sc"]'></anvil-component>
+      <anvil-component type="Label" name="a_delta" prop:role='["delta"]'></anvil-component>
+    </div>
+    <div class="ss-vs" aria-hidden="true">VS</div>
+    <div class="ss-pside">
+      <anvil-component type="Subsudo.Components.Avatar" name="b_av" prop:size="lg"></anvil-component>
+      <a class="ss-ring" anvil:name="b_link"><anvil-component type="Label" name="b_name"></anvil-component></a>
+      <anvil-component type="Label" name="b_sub" prop:role='["ss-sub"]'></anvil-component>
+      <anvil-component type="Label" name="b_score" prop:role='["sc"]'></anvil-component>
+      <anvil-component type="Label" name="b_delta" prop:role='["delta"]'></anvil-component>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <section class="gy-card">
+        <a class="gy-face" href="#locker" title="Locker room" aria-label="Locker room: build your fighter"><anvil-component type="Subsudo.Components.Avatar" name="face" prop:size="xl"></anvil-component><span class="tag">Locker</span></a>
+        <div class="gy-who">
+          <div class="ss-sub gy-sub"><anvil-component type="Label" name="real_name"></anvil-component><anvil-component type="Subsudo.Components.Place" name="place"></anvil-component></div>
+          <anvil-component type="Label" name="ring" prop:role='["gy-ring"]'></anvil-component>
+          <div class="ui-row gy-tags"><anvil-component type="Subsudo.Components.Tags" name="tags"></anvil-component><anvil-component type="Label" name="provisional" prop:role='["badge"]'></anvil-component></div>
+          <div class="gy-nums">
+            <div class="rate"><anvil-component type="Label" name="rating" prop:role='["num"]'></anvil-component><span>Rating</span></div>
+            <div><anvil-component type="Label" name="record" prop:role='["num"]'></anvil-component><span>W-L-D</span></div>
+            <div><anvil-component type="Label" name="kos" prop:role='["num"]'></anvil-component><span>KOs</span></div>
+            <div><anvil-component type="Label" name="points" prop:role='["num"]'></anvil-component><span>Points</span></div>
+            <div><anvil-component type="Label" name="speed" prop:role='["num"]'></anvil-component><span>Top m/s</span></div>
+          </div>
+        </div>
+        <div class="gy-rank">
+          <div><anvil-component type="Label" name="rank_world" prop:role='["num"]'></anvil-component><span>World</span></div>
+          <div class="city" anvil:name="city_rank_box"><anvil-component type="Label" name="rank_city" prop:role='["num"]'></anvil-component><anvil-component type="Label" name="rank_city_name" prop:role='["gy-rank-name"]'></anvil-component></div>
+        </div>
+      </section>
+
+      <div class="gy-nudge" anvil:name="nudge_card"><i class="ic ic-glove"></i><p><b>Set up your fighter card.</b> A ring name and your city put you on the city board and let you call people out.</p><a class="ui-btn primary" href="#profile">Fighter card</a></div>
+      <div class="gy-nudge" anvil:name="nudge_locker"><anvil-component type="Subsudo.Components.Avatar" name="nudge_face"></anvil-component><p><b>Build your fighter in the locker room.</b> Pick the face, hair, kit and gloves opponents will see, and watch it take the hits.</p><a class="ui-btn primary" href="#locker">Locker room</a></div>
+
+      <div anvil:name="corner_part">
+        <div class="ss-h"><h2>In your corner</h2><anvil-component type="Label" name="to_answer_count" prop:role='["badge", "badge-brand"]'></anvil-component></div>
+        <anvil-component type="RepeatingPanel" name="to_answer" prop:item_template="Subsudo.Items.BoutCard" prop:role='["gy-list"]'></anvil-component>
+      </div>
+
+      <div class="ss-h"><h2>Pick a fight</h2></div>
+      <div class="gy-ways">
+        <a class="gy-way" href="#find" style="--bg:#8e1b1b"><i class="ic ic-megaphone"></i><b>Call someone out</b><span>Pick a fighter anywhere in the world.</span></a>
+        <a class="gy-way" href="#fight/open" style="--bg:#2b2622"><i class="ic ic-flag"></i><b>Open call-out</b><span>Post a round. First taker fights it.</span></a>
+        <a class="gy-way" href="#fight/invite" style="--bg:#6e5118"><i class="ic ic-send"></i><b>Invite a friend</b><span>A link. No account needed.</span></a>
+        <a class="gy-way" href="#fight/train" style="--bg:#24443a"><i class="ic ic-bag"></i><b>Bag work</b><span>Train a round. 1 point, 5 a day.</span></a>
+      </div>
+
+      <div class="gy-cols">
+        <div>
+          <div anvil:name="waiting_part">
+            <div class="ss-h"><h2>Waiting on</h2></div>
+            <anvil-component type="RepeatingPanel" name="waiting" prop:item_template="Subsudo.Items.BoutCard" prop:role='["gy-list"]'></anvil-component>
+          </div>
+          <div class="ss-h"><h2>Recent bouts</h2><a class="ui-btn ghost sm" anvil:name="record_link" href="#home">Your record</a></div>
+          <anvil-component type="RepeatingPanel" name="recent" prop:item_template="Subsudo.Items.BoutCard" prop:role='["gy-list"]'></anvil-component>
+          <div class="ui-empty" anvil:name="no_recent"><i class="ic ic-glove"></i><h3>No bouts yet</h3><p>Answer Coach Bruno in your corner, or call someone out.</p></div>
+        </div>
+        <aside>
+          <div class="ss-h"><anvil-component type="Label" name="city_title" prop:role='["h2"]'></anvil-component></div>
+          <div class="ui-card tight">
+            <div anvil:name="city_board_part">
+              <anvil-component type="RepeatingPanel" name="city_board" prop:item_template="Subsudo.Items.CityRow" prop:role='["gy-board"]'></anvil-component>
+              <a class="ui-btn ghost sm block gy-full" href="#rankings/city">Full city board</a>
+            </div>
+            <anvil-component type="Label" name="city_note" prop:role='["fine-print"]'></anvil-component>
+          </div>
+          <div class="ss-h"><h2>Fair fights</h2></div>
+          <anvil-component type="RepeatingPanel" name="suggested" prop:item_template="Subsudo.Items.SuggestCard" prop:role='["gy-list"]'></anvil-component>
+          <div class="ss-h"><h2>Bag work</h2></div>
+          <div class="ui-card tight gy-train"><i class="ic ic-bag"></i><div class="gy-train-text"><anvil-component type="Label" name="best_round" prop:role='["num"]'></anvil-component><anvil-component type="Label" name="train_note" prop:role='["ss-sub"]'></anvil-component></div><a class="ui-btn sm" href="#fight/train">Train</a></div>
+        </aside>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

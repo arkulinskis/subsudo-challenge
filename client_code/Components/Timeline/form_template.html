@@ -1,0 +1,14 @@
+---
+custom_component: true
+help_text: 'The punch log: one lane per fighter, a tick per punch (taller = faster), blocks below the line (SS.timeline).'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A finished bout dict (both sides' events)
+  name: bout
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Punch timeline
+---
+<div class="ss-tl-host" anvil:dom-node="box"></div>

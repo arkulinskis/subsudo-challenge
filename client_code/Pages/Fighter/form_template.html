@@ -1,0 +1,56 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-empty" anvil:name="gone"><i class="ic ic-user"></i><h3>No fighter here</h3><p>That fighter left the gym, or the link is wrong.</p><a class="ui-btn" href="#rankings">Rankings</a></div>
+      <div anvil:name="main">
+        <section class="fp-hero">
+          <anvil-component type="Subsudo.Components.Avatar" name="av" prop:size="xl"></anvil-component>
+          <div class="fp-who">
+            <div class="ss-sub fp-sub"><anvil-component type="Label" name="real_name"></anvil-component><anvil-component type="Subsudo.Components.Place" name="place"></anvil-component><anvil-component type="Label" name="stance"></anvil-component></div>
+            <anvil-component type="Label" name="ring" prop:role='["fp-ring"]'></anvil-component>
+            <div class="ui-row fp-tags">
+              <anvil-component type="Subsudo.Components.Tags" name="tags"></anvil-component>
+              <anvil-component type="Label" name="unranked" prop:text="Unranked" prop:role='["badge"]'></anvil-component>
+              <anvil-component type="Label" name="open" prop:text="Open to fights" prop:role='["badge", "badge-good"]'></anvil-component>
+              <anvil-component type="Label" name="demo" prop:text="Demo" prop:role='["badge"]'></anvil-component>
+            </div>
+            <anvil-component type="Label" name="bio" prop:role='["fp-bio"]'></anvil-component>
+          </div>
+          <div class="cta">
+            <a class="ui-btn primary lg" anvil:name="call_link" href="#home"><i class="ic ic-megaphone"></i>Call out</a>
+            <a class="ui-btn lg" anvil:name="edit_link" href="#profile"><i class="ic ic-edit"></i>Edit card</a>
+            <a class="ui-btn primary lg" anvil:name="join_link" href="#auth/signup">Join to fight</a>
+          </div>
+        </section>
+        <div class="fp-nums">
+          <div><anvil-component type="Label" name="n_rating" prop:role='["num"]'></anvil-component><span>Rating</span></div>
+          <div><anvil-component type="Label" name="n_world" prop:role='["num"]'></anvil-component><span>World</span></div>
+          <div><anvil-component type="Label" name="n_record" prop:role='["num"]'></anvil-component><span>W-L-D</span></div>
+          <div><anvil-component type="Label" name="n_kos" prop:role='["num"]'></anvil-component><span>KOs</span></div>
+          <div><anvil-component type="Label" name="n_points" prop:role='["num"]'></anvil-component><span>Points</span></div>
+          <div><anvil-component type="Label" name="n_ducks" prop:role='["num"]'></anvil-component><span>Ducked</span></div>
+        </div>
+        <div class="fp-cols">
+          <div>
+            <div class="ss-h ss-h-top"><h2>Recent bouts</h2></div>
+            <anvil-component type="RepeatingPanel" name="bouts" prop:item_template="Subsudo.Items.BoutCard" prop:role='["gy-list"]'></anvil-component>
+            <div class="ui-empty" anvil:name="no_bouts"><i class="ic ic-glove"></i><h3>No bouts yet</h3></div>
+          </div>
+          <aside>
+            <div class="ss-h ss-h-top"><h2>Rating</h2></div>
+            <div class="ui-card tight"><anvil-component type="Subsudo.Components.RatingLine" name="line"></anvil-component></div>
+            <div class="ss-h"><h2>Best round</h2></div>
+            <div class="fp-nums fp-best">
+              <div><anvil-component type="Label" name="b_score" prop:role='["num"]'></anvil-component><span>Score</span></div>
+              <div><anvil-component type="Label" name="b_speed" prop:role='["num"]'></anvil-component><span>Top m/s</span></div>
+              <div><anvil-component type="Label" name="b_punches" prop:role='["num"]'></anvil-component><span>Punches</span></div>
+              <div><anvil-component type="Label" name="b_blocks" prop:role='["num"]'></anvil-component><span>Blocks</span></div>
+            </div>
+            <div class="ss-h"><h2>Badges</h2></div>
+            <anvil-component type="RepeatingPanel" name="badges" prop:item_template="Subsudo.Items.BadgeTile" prop:role='["fp-badges"]'></anvil-component>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

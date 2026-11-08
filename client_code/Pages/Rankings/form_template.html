@@ -1,0 +1,32 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-page-head"><div><h1>Rankings</h1><anvil-component type="Label" name="lead" prop:role='["muted", "page-lead"]'></anvil-component></div></div>
+      <nav class="ui-tabs" aria-label="Boards">
+        <a href="#rankings" anvil:name="tab_world"><i class="ic ic-globe"></i>World</a>
+        <a href="#rankings/city" anvil:name="tab_city"><i class="ic ic-pin"></i>City</a>
+        <a href="#rankings/week" anvil:name="tab_week"><i class="ic ic-bolt"></i>This week</a>
+      </nav>
+      <div class="rk-bar" anvil:name="city_bar">
+        <anvil-component type="DropDown" name="city_pick" prop:role='["rk-city"]'></anvil-component>
+        <anvil-component type="Label" name="city_belt" prop:role='["belt"]'></anvil-component>
+      </div>
+      <div class="ui-note rk-note" anvil:name="mine_note"><i class="ic ic-info"></i> <anvil-component type="Label" name="mine_text"></anvil-component> <a href="#find">Find a fight</a></div>
+      <div class="ui-empty" anvil:name="need_city"><i class="ic ic-pin"></i><h2 class="empty-h">Which city?</h2><anvil-component type="Label" name="need_city_text"></anvil-component></div>
+      <div class="ui-empty" anvil:name="empty"><i class="ic ic-ranks"></i><h2 class="empty-h">The board is empty</h2><anvil-component type="Label" name="empty_text"></anvil-component></div>
+      <anvil-component type="RepeatingPanel" name="podium" prop:item_template="Subsudo.Items.Pod" prop:role='["rk-top"]'></anvil-component>
+      <anvil-component type="RepeatingPanel" name="rows" prop:item_template="Subsudo.Items.RankRow" prop:role='["rk-list"]'></anvil-component>
+      <details class="ui-card rk-how">
+        <summary>How the rankings work</summary>
+        <ul>
+          <li>Everyone starts at <b>1000</b>. Ranked bouts move your rating up or down, more when the result is a surprise (Elo, like chess).</li>
+          <li>Knockouts move it 25% more, split decisions 20% less. Bouts against guests and the house give points but don't touch your rating.</li>
+          <li><anvil-component type="Label" name="how_board"></anvil-component></li>
+          <li>#1 in the world holds the <b>World belt</b>; #1 in each city holds that city's belt.</li>
+          <li>Points: win 25, KO win 35, draw 12, loss 5; house win 15 (+ bonus); bag work 1 (5 a day).</li>
+        </ul>
+        <anvil-component type="RepeatingPanel" name="tiers" prop:item_template="Subsudo.Items.TierChip" prop:role='["rk-tiers"]'></anvil-component>
+      </details>
+    </div>
+  </anvil-block>
+</anvil-form>

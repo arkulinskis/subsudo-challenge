@@ -1,0 +1,35 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="ui-page-head">
+        <div><h1>Find a fight</h1><p class="muted">Enemies everywhere. Pick one, record a round, it lands in their Mail.</p></div>
+        <a class="ui-btn" href="#fight/open"><i class="ic ic-flag"></i>Post an open call-out</a>
+      </div>
+      <nav class="ui-tabs" aria-label="Find">
+        <a href="#find" anvil:name="tab_fighters"><i class="ic ic-users"></i>Fighters</a>
+        <a href="#find/calls" anvil:name="tab_calls"><i class="ic ic-flag"></i>Open call-outs <anvil-component type="Label" name="n_calls" prop:role='["count"]'></anvil-component></a>
+      </nav>
+
+      <div anvil:name="fighters_part">
+        <div class="fd-bar">
+          <anvil-component type="TextBox" name="q_box" prop:type="search" prop:placeholder="Ring name or city" prop:role='["fd-search"]'></anvil-component>
+          <div class="ui-seg" role="group" aria-label="Where">
+            <button type="button" anvil:name="sc_world" data-scope="world" anvil:on-dom:click="self.scope_click">World</button>
+            <button type="button" anvil:name="sc_city" data-scope="city" anvil:on-dom:click="self.scope_click"><anvil-component type="Label" name="sc_city_label" prop:text="My city"></anvil-component></button>
+            <button type="button" anvil:name="sc_near" data-scope="near" anvil:on-dom:click="self.scope_click">Near my rating</button>
+          </div>
+          <anvil-component type="CheckBox" name="open_box" prop:text="Open to fights"></anvil-component>
+          <anvil-component type="Label" name="total" prop:role='["fine-print"]'></anvil-component>
+        </div>
+        <div class="ui-note fd-note" anvil:name="city_note">Add your city to your <a href="#profile">fighter card</a> to see who fights near you.</div>
+        <anvil-component type="RepeatingPanel" name="fighters" prop:item_template="Subsudo.Items.FighterCard" prop:role='["fd-grid"]'></anvil-component>
+        <div class="ui-empty" anvil:name="no_fighters"><i class="ic ic-search"></i><h2 class="empty-h">Nobody here yet</h2><p>Try the whole world, or invite a friend with a link.</p><a class="ui-btn" href="#fight/invite">Invite a friend</a></div>
+      </div>
+
+      <div anvil:name="calls_part">
+        <anvil-component type="RepeatingPanel" name="calls" prop:item_template="Subsudo.Items.BoutCard" prop:role='["fd-calls"]'></anvil-component>
+        <div class="ui-empty" anvil:name="no_calls"><i class="ic ic-flag"></i><h2 class="empty-h">No open call-outs</h2><p>Be the first: post a round and see who takes it.</p><a class="ui-btn primary" href="#fight/open">Post an open call-out</a></div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

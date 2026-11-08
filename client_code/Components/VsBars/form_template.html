@@ -1,0 +1,17 @@
+---
+custom_component: true
+help_text: 'The tale of the tape: both fighters'' numbers as bars, side by side (drawn by SS.vsBars).'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A bout dict with both sides' stats
+  name: bout
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Tale of the tape
+---
+<div class="ss-vsbox">
+  <div class="ss-vsbar ss-vshead"><span></span><anvil-component type="Label" name="a_name" prop:role='["ss-sub"]'></anvil-component><span></span><anvil-component type="Label" name="b_name" prop:role='["ss-sub", "r"]'></anvil-component><span></span></div>
+  <div anvil:dom-node="bars"></div>
+</div>

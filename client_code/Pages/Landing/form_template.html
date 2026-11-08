@@ -1,0 +1,117 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="lp">
+      <section class="lp-hero">
+        <div class="ui-wrap">
+          <h1>Find an enemy. <em>Throw the first round.</em></h1>
+          <p class="lp-lead">Subsudo is the virtual fight club: it turns your phone or your laptop camera into a punch counter. Record a round, send it to anyone in the world, and let three judges decide. Own your city's board, then go after the world.</p>
+          <div class="lp-cta">
+            <div class="ui-row" anvil:name="guest_cta">
+              <a class="ui-btn primary lg" href="#auth/signup"><i class="ic ic-glove"></i>Join the club, it's free</a>
+              <a class="ui-btn lg" href="#auth">I have an account</a>
+            </div>
+            <div class="ui-row" anvil:name="member_cta">
+              <a class="ui-btn primary lg" href="#home"><i class="ic ic-glove"></i>Open the gym</a>
+            </div>
+          </div>
+          <div class="lp-proof">
+            <span><i class="ic ic-check"></i>Phone or laptop camera</span>
+            <span><i class="ic ic-check"></i>Bouts by mail, no scheduling</span>
+            <span><i class="ic ic-check"></i>Ranked by city and worldwide</span>
+          </div>
+          <div class="lp-card" aria-hidden="true">
+            <div class="lp-corner red"><span class="glove">🥊</span><div class="tag">Red corner</div><div class="nm">You</div><div class="pl">Your city</div><div class="cnt"></div><div class="cl">punches landed</div></div>
+            <div class="lp-mid"><div class="lp-vs">VS</div><div class="lp-clock"><b>RD 1</b> · 0:60</div><div class="lp-bell">Fight by mail</div></div>
+            <div class="lp-corner blue"><span class="glove">🥊</span><div class="tag">Blue corner</div><div class="nm">Lagos Lightning</div><div class="pl">Lagos · NG</div><div class="cnt"></div><div class="cl">punches landed</div></div>
+          </div>
+        </div>
+        <div class="lp-ticker" aria-hidden="true">
+          <span class="lbl">WORLD</span>
+          <div class="run"><anvil-component type="RepeatingPanel" name="ticker" prop:item_template="Subsudo.Items.TickerItem" prop:role='["contents"]'></anvil-component></div>
+        </div>
+      </section>
+
+      <section class="lp-section ytf" id="watch">
+        <div class="ui-wrap">
+          <div class="ytf-in">
+            <div class="ytf-copy">
+              <h2>See Subsudo in about a minute</h2>
+              <p>A short video tour of what Subsudo does and how it works.</p>
+              <a class="ytf-link" href="https://www.youtube.com/watch?v=ECTqEf17FOg" target="_blank" rel="noopener"><svg viewBox="0 0 28 20" width="20" height="14" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#FF0033"/><path d="M11.2 5.8v8.4l7.3-4.2z" fill="#fff"/></svg>Watch on YouTube &#8599;</a>
+            </div>
+            <div>
+              <div class="ytf-frame" anvil:dom-node="yt_frame">
+                <button type="button" class="ytf-cover" anvil:dom-node="yt_cover" aria-label="Play the Subsudo video (1:11)">
+                  <img src="_/theme/yt-cover.jpg" alt="" loading="lazy" decoding="async" width="960" height="540">
+                  <span class="ytf-play" aria-hidden="true"><svg viewBox="0 0 68 48" width="68" height="48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.3.3 34 .3 34 .3s-21.3 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.2 1.4 26.5 1.4 26.5 1.4s21.3 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3z" fill="#FF0033"/><path d="M45 24 27 14v20z" fill="#fff"/></svg></span>
+                  <span class="ytf-len">1:11</span>
+                </button>
+              </div>
+              <p class="ytf-note">The video loads from YouTube when you press play.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="how">
+        <div class="ui-wrap">
+          <div class="lp-head"><h2>Three rounds to the board</h2><p>No sparring partner in the room. No timezone to match. Just your round against theirs.</p></div>
+          <div class="lp-steps">
+            <div class="ui-card lp-step"><h3>Glove up</h3><p class="muted">Hold your phone in your fist (right hand, the bell, then left) or stand back from your laptop camera. Every jab, hook, uppercut and block is counted, with its speed.</p></div>
+            <div class="ui-card lp-step"><h3>Send the round</h3><p class="muted">Call out a fighter from any city, pin an open call-out to the board, or send a friend a link. Your score stays sealed in their Mail.</p></div>
+            <div class="ui-card lp-step"><h3>Let the judges talk</h3><p class="muted">They fight back on their own time. Three judges score power, volume and ring craft. KO, decision or draw: your rating and the city board move.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section lp-tight">
+        <div class="ui-wrap">
+          <div class="lp-head"><h2>What's in the gym bag</h2></div>
+          <div class="lp-features">
+            <div class="lp-feature"><span class="fic"><i class="ic ic-phone"></i></span><div><h3>Phone in fist</h3><p>The motion sensor tells punches from blocks: forward is a punch, up or down is a block, up and forward is an uppercut, a fast turn is a hook. The phone rings the bell and calls the hand switch.</p></div></div>
+            <div class="lp-feature"><span class="fic"><i class="ic ic-camera"></i></span><div><h3>Laptop camera</h3><p>A hand tracker running in your browser follows both fists. The video never leaves your device; only the punch log is sent.</p></div></div>
+            <div class="lp-feature"><span class="fic"><i class="ic ic-mail"></i></span><div><h3>Bouts by mail</h3><p>No scheduling. A call-out waits 7 days in their Mail. Duck it, and it shows on your fighter card.</p></div></div>
+            <div class="lp-feature"><span class="fic"><i class="ic ic-ranks"></i></span><div><h3>City and world boards</h3><p>A rating like chess: beat stronger fighters, climb faster. #1 in your city holds the city belt; #1 overall holds the World belt.</p></div></div>
+            <div class="lp-feature"><span class="fic"><i class="ic ic-send"></i></span><div><h3>Fight friends without accounts</h3><p>Send a link. They fight back from their own phone. If they join later, the bout moves onto their record.</p></div></div>
+            <div class="lp-feature"><span class="fic"><i class="ic ic-house"></i></span><div><h3>House fighters</h3><p>Nobody to fight tonight? Coach Bruno, Big Dee and the gym crew send challenges, with bonus points for beating them.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section lp-tight">
+        <div class="ui-wrap">
+          <div class="lp-head"><h2>Top of the world</h2><p>Right now, on the board.</p></div>
+          <div class="lp-board">
+            <anvil-component type="RepeatingPanel" name="board" prop:item_template="Subsudo.Items.RankRow" prop:role='["rk-list"]'></anvil-component>
+            <div class="ui-empty" anvil:name="board_empty"><h3>The board is empty</h3><p>The World belt is up for grabs.</p></div>
+          </div>
+          <p class="lp-more"><a class="ui-btn" href="#rankings"><i class="ic ic-ranks"></i>All rankings</a></p>
+        </div>
+      </section>
+
+      <section class="lp-section lp-tight">
+        <div class="ui-wrap">
+          <div class="lp-head"><h2>Questions from the locker room</h2></div>
+          <div class="lp-faq">
+            <details><summary>Is it safe?</summary><p>It's shadow boxing. Clear space around you, grip the phone hard (a wrist strap helps), and never punch people, walls or screens. You train at your own risk; stop if anything hurts.</p></details>
+            <details><summary>How accurate is the punch counting?</summary><p>Good, not lab-grade. Speeds are estimates from your phone's motion sensor or the camera, and everyone is measured the same way. The server scores every round again from its punch log.</p></details>
+            <details><summary>Can people cheat by shaking the phone?</summary><p>Shaking isn't boxing: the judges reward both hands, variety, blocks and combos, not just noise. Odd-looking rounds are flagged for the admins.</p></details>
+            <details><summary>Is my camera video uploaded?</summary><p>No. The picture stays in your browser. Only the punch log is sent: when, which hand, which punch, how fast.</p></details>
+            <details><summary>Who sees my data?</summary><p>Other members see your ring name, city, record and bouts. Never your email. The Privacy &amp; Terms page has the details.</p></details>
+            <details><summary>What does it cost?</summary><p>Nothing. Subsudo is free.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section lp-tight">
+        <div class="ui-wrap">
+          <div class="lp-band">
+            <div><h2>The bell's about to ring.</h2><p>Pick a ring name and take Coach Bruno's welcome bout. Thirty seconds.</p></div>
+            <a class="ui-btn lg" href="#auth/signup" anvil:name="band_join">Join the club, it's free</a>
+            <a class="ui-btn lg" href="#home" anvil:name="band_gym">Open the gym</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </anvil-block>
+</anvil-form>

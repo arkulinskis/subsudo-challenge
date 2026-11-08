@@ -1,0 +1,33 @@
+<div class="ss-bout-host">
+<article class="ss-bout" anvil:name="card">
+  <div class="ss-side a">
+    <anvil-component type="Subsudo.Components.Avatar" name="a_av"></anvil-component>
+    <div class="who">
+      <a class="ss-ring" anvil:name="a_link"><anvil-component type="Label" name="a_name"></anvil-component></a>
+      <anvil-component type="Label" name="a_sub" prop:role='["ss-sub"]'></anvil-component>
+      <anvil-component type="Label" name="a_score" prop:role='["score"]'></anvil-component>
+    </div>
+  </div>
+  <div class="ss-vs" aria-hidden="true">VS</div>
+  <div class="ss-side b">
+    <anvil-component type="Subsudo.Components.Avatar" name="b_av"></anvil-component>
+    <div class="who">
+      <a class="ss-ring" anvil:name="b_link"><anvil-component type="Label" name="b_name"></anvil-component></a>
+      <anvil-component type="Label" name="b_sub" prop:role='["ss-sub"]'></anvil-component>
+      <anvil-component type="Label" name="b_score" prop:role='["score"]'></anvil-component>
+    </div>
+  </div>
+  <anvil-component type="Label" name="words" prop:role='["ss-words"]'></anvil-component>
+  <div class="ss-bout-foot">
+    <anvil-component type="Label" name="kind" prop:role='["badge"]'></anvil-component>
+    <span class="ui-badge"><i class="ic ic-timer"></i><anvil-component type="Label" name="secs"></anvil-component></span>
+    <anvil-component type="Label" name="bonus" prop:role='["badge", "badge-good"]'></anvil-component>
+    <anvil-component type="Label" name="outcome"></anvil-component>
+    <anvil-component type="Label" name="status" prop:role='["fine-print"]'></anvil-component>
+    <span class="ss-spacer"></span>
+    <a class="ui-btn primary sm" anvil:name="answer_link"><i class="ic ic-glove"></i><anvil-component type="Label" name="answer_text"></anvil-component></a>
+    <a class="ui-btn sm" anvil:name="open_link"><anvil-component type="Label" name="open_text"></anvil-component></a>
+    <anvil-component type="Button" name="share_button" prop:text="Share link" prop:role='["btn", "btn-sm", "ic-send"]'></anvil-component>
+  </div>
+</article>
+</div>

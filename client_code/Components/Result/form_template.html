@@ -1,0 +1,25 @@
+---
+custom_component: true
+help_text: 'A finished bout''s result: the stamp (You win · KO!), who won how, and the three judges'' cards.'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A finished bout dict from the server
+  name: bout
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Result
+---
+<div class="ss-result">
+  <anvil-component type="Label" name="stamp" prop:role='["stamp"]'></anvil-component>
+  <anvil-component type="Label" name="line" prop:role='["result-line"]'></anvil-component>
+  <div class="ss-cards" role="table" aria-label="The judges' cards">
+    <div class="ss-card-row ss-card-head" role="row">
+      <span role="columnheader" class="j">Judge</span>
+      <anvil-component type="Label" name="a_head" prop:role='["n"]'></anvil-component>
+      <anvil-component type="Label" name="b_head" prop:role='["n"]'></anvil-component>
+    </div>
+    <anvil-component type="RepeatingPanel" name="judges" prop:item_template="Subsudo.Items.JudgeRow"></anvil-component>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="fd-host">
+<article class="ui-card fd-card">
+  <anvil-component type="Subsudo.Components.Avatar" name="av" prop:size="lg"></anvil-component>
+  <div class="fd-who">
+    <a class="ss-ring" anvil:name="link"><anvil-component type="Label" name="ring"></anvil-component></a>
+    <div class="ss-sub fd-sub"><anvil-component type="Subsudo.Components.Place" name="place" prop:empty="Somewhere"></anvil-component><anvil-component type="Label" name="stance"></anvil-component></div>
+    <anvil-component type="Subsudo.Components.Tags" name="tags"></anvil-component>
+  </div>
+  <anvil-component type="Label" name="bio" prop:role='["fd-bio"]'></anvil-component>
+  <div class="fd-nums">
+    <div><anvil-component type="Label" name="rating" prop:role='["num"]'></anvil-component><span>Rating</span></div>
+    <div><anvil-component type="Label" name="record" prop:role='["num"]'></anvil-component><span>Record</span></div>
+    <div><anvil-component type="Label" name="kos" prop:role='["num"]'></anvil-component><span>KOs</span></div>
+    <div><anvil-component type="Label" name="speed" prop:role='["num"]'></anvil-component><span>Top m/s</span></div>
+  </div>
+  <div class="fd-acts">
+    <a class="ui-btn primary sm" anvil:name="call_link"><i class="ic ic-megaphone"></i>Call out</a>
+    <a class="ui-btn sm" anvil:name="record_link">Record</a>
+  </div>
+  <anvil-component type="Label" name="demo" prop:text="Demo" prop:role='["badge", "fd-demo"]'></anvil-component>
+</article>
+</div>

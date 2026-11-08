@@ -1,0 +1,12 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap ml-wrap">
+      <div class="ui-page-head">
+        <div><h1>Mail</h1><div class="muted ml-lead"><anvil-component type="Label" name="to_answer" prop:role='["strong", "inline"]'></anvil-component> Call-outs, results and words from your opponents.</div></div>
+        <anvil-component type="Button" name="all_button" prop:text="Mark all read" prop:role='["btn", "btn-sm", "ic-check"]'></anvil-component>
+      </div>
+      <anvil-component type="RepeatingPanel" name="messages" prop:item_template="Subsudo.Items.MailMsg" prop:role='["ml-list"]'></anvil-component>
+      <div class="ui-empty" anvil:name="empty"><i class="ic ic-mail"></i><h2 class="empty-h">Nothing in the mailbox</h2><p>Call someone out and the replies land here.</p><a class="ui-btn primary" href="#find">Find a fight</a></div>
+    </div>
+  </anvil-block>
+</anvil-form>

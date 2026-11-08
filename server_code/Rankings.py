@@ -25,7 +25,7 @@ def get_rankings(scope="world", city_key=None):
     bm = F.belts(rows)
     key = city_key or (me["city_key"] if me is not None else None)
     city_name = None
-    out = []
+    out: list = []
     if scope == "week":
         since = C.now() - dt.timedelta(days=7)
         totals = {}

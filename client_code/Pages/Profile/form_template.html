@@ -1,0 +1,76 @@
+<anvil-form layout="Subsudo.Layouts.Shell">
+  <anvil-block slot="content">
+    <div class="ui-wrap">
+      <div class="pf-head">
+        <anvil-component type="Subsudo.Components.Avatar" name="head_av" prop:size="lg"></anvil-component>
+        <div class="pf-head-text">
+          <anvil-component type="Label" name="ring_title" prop:role='["pf-title"]'></anvil-component>
+          <anvil-component type="Label" name="email_line" prop:role='["muted"]'></anvil-component>
+        </div>
+        <span class="ui-spacer"></span>
+        <a class="ui-btn sm" anvil:name="public_link" href="#home">Your public page</a>
+      </div>
+
+      <section class="ui-card pf-card">
+        <div class="pf-form">
+          <div class="full"><h2 class="card-h">Fighter card</h2><p class="muted small pf-sub">What opponents see. Your email never shows.</p></div>
+          <label class="ui-field full"><span>Ring name</span><anvil-component type="TextBox" name="ring_box" prop:placeholder="The Hammer"></anvil-component></label>
+          <label class="ui-field"><span>City</span><anvil-component type="TextBox" name="city_box" prop:placeholder="Montréal"></anvil-component></label>
+          <label class="ui-field"><span>Country</span><anvil-component type="DropDown" name="country_box"></anvil-component></label>
+          <div class="ui-field"><span>Stance</span>
+            <div class="ui-seg" role="group" aria-label="Stance">
+              <button type="button" anvil:name="st_orthodox" data-st="orthodox" anvil:on-dom:click="self.stance_click">Orthodox</button>
+              <button type="button" anvil:name="st_southpaw" data-st="southpaw" anvil:on-dom:click="self.stance_click">Southpaw</button>
+            </div>
+          </div>
+          <div class="ui-field"><span>Gloves</span>
+            <div role="group" aria-label="Gloves"><anvil-component type="RepeatingPanel" name="gloves" prop:item_template="Subsudo.Items.GloveChoice" prop:role='["pf-gloves"]'></anvil-component></div>
+          </div>
+          <label class="ui-field full"><span>A line for your opponents <em>(optional)</em></span><anvil-component type="TextBox" name="bio_box" prop:placeholder="Desk job by day. Heavy bag by night."></anvil-component></label>
+          <div class="full"><anvil-component type="CheckBox" name="open_box" prop:text="Open to fights: show me on Find and in suggestions"></anvil-component></div>
+          <div class="full ui-row">
+            <anvil-component type="Button" name="save_card_button" prop:text="Save fighter card" prop:role='["btn", "btn-primary", "ic-check"]'></anvil-component>
+            <a class="ui-btn" href="#locker"><i class="ic ic-user"></i>Locker room: build your face</a>
+          </div>
+        </div>
+        <div class="pf-prev" aria-live="polite">
+          <anvil-component type="Subsudo.Components.Avatar" name="prev_av" prop:size="xl"></anvil-component>
+          <anvil-component type="Label" name="prev_ring" prop:role='["pf-prev-ring"]'></anvil-component>
+          <div class="ss-sub pf-prev-sub"><anvil-component type="Subsudo.Components.Place" name="prev_place" prop:empty="Somewhere"></anvil-component><anvil-component type="Label" name="prev_stance"></anvil-component></div>
+          <anvil-component type="Label" name="prev_bio" prop:role='["pf-prev-bio"]'></anvil-component>
+        </div>
+      </section>
+
+      <div class="pf-grid">
+        <div class="ui-card ui-stack">
+          <h2 class="card-h">Your name</h2>
+          <label class="ui-field"><span>Shown under your ring name</span><anvil-component type="TextBox" name="name_box"></anvil-component></label>
+          <anvil-component type="Button" name="save_name_button" prop:text="Save" prop:role='["btn"]'></anvil-component>
+        </div>
+        <div class="ui-card ui-stack">
+          <h2 class="card-h">Appearance &amp; sound</h2>
+          <div class="ui-seg" role="group" aria-label="Appearance">
+            <button type="button" anvil:name="theme_auto" data-theme-pick="auto" anvil:on-dom:click="self.theme_click">Auto</button>
+            <button type="button" anvil:name="theme_light" data-theme-pick="light" anvil:on-dom:click="self.theme_click">Light</button>
+            <button type="button" anvil:name="theme_dark" data-theme-pick="dark" anvil:on-dom:click="self.theme_click">Dark</button>
+          </div>
+          <anvil-component type="CheckBox" name="sound_box" prop:text="Bell and punch sounds"></anvil-component>
+          <anvil-component type="CheckBox" name="voice_box" prop:text="Corner voice (&quot;Switch! Left hand&quot;)"></anvil-component>
+          <anvil-component type="CheckBox" name="music_box" prop:text="Music (walk-out and rounds)"></anvil-component>
+          <h2 class="card-h pf-pw">Password</h2>
+          <anvil-component type="Button" name="reset_button" prop:text="Email me a reset link" prop:role='["btn", "ic-mail"]'></anvil-component>
+        </div>
+      </div>
+
+      <div class="ui-card pf-more">
+        <div class="pf-links">
+          <a href="#admin" anvil:name="admin_link"><i class="ic ic-shield"></i>Admin</a>
+          <a href="#fight/train"><i class="ic ic-bag"></i>Bag work (test the punch counting)</a>
+          <button type="button" anvil:on-dom:click="self.feedback_click"><i class="ic ic-chat"></i>Submit feedback</button>
+          <button type="button" data-lk-open="overview"><i class="ic ic-lock"></i>Privacy &amp; Terms, and your data</button>
+          <button type="button" anvil:on-dom:click="self.sign_out_click"><i class="ic ic-logout"></i>Sign out</button>
+        </div>
+      </div>
+    </div>
+  </anvil-block>
+</anvil-form>

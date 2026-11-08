@@ -1,0 +1,22 @@
+---
+custom_component: true
+help_text: 'A fighter''s Locker-room portrait with today''s bout damage, or a glove for the house and guests (theme/assets/ss-core.js + ss-face.js draw it).'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: 'A fighter dict from the server (id, ring, avatar, glove, hurt), or {name, house, guest}'
+  name: fighter
+  type: object
+- default_value: null
+  description: 'A bout side instead of a fighter (house fighters and guests get a glove)'
+  name: side
+  type: object
+- default_value: ''
+  description: 'Size: empty (44 px), sm, lg or xl'
+  name: size
+  type: string
+toolbox_item:
+  group: Subsudo
+  title: Avatar
+---
+<span class="ss-avatar" anvil:dom-node="box"></span>

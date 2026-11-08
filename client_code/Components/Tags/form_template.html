@@ -1,0 +1,22 @@
+---
+custom_component: true
+help_text: 'A fighter''s tier, belts and bout damage, as small badges.'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A fighter dict (tier, belts, hurt)
+  name: fighter
+  type: object
+- default_value: true
+  description: Show the tier badge
+  name: tier
+  type: boolean
+toolbox_item:
+  group: Subsudo
+  title: Tags
+---
+<span class="ss-tags">
+  <anvil-component type="Label" name="tier_label" prop:role='["tier"]'></anvil-component>
+  <anvil-component type="RepeatingPanel" name="belts" prop:item_template="Subsudo.Items.Belt" prop:role='["contents"]'></anvil-component>
+  <span class="ss-hurt" anvil:name="hurt_box"><i class="ic" anvil:name="hurt_icon"></i><anvil-component type="Label" name="hurt"></anvil-component></span>
+</span>

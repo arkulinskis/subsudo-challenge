@@ -1,0 +1,16 @@
+<div class="ml-host">
+<section class="ml-msg" anvil:name="box">
+  <div class="ml-head">
+    <span class="ml-ic" anvil:name="icon_box"><i class="ic" anvil:name="icon"></i></span>
+    <div class="ml-text">
+      <div class="ml-title-row">
+        <anvil-component type="Label" name="title" prop:role='["ml-title"]' bind:text="self.item['title']"></anvil-component>
+        <anvil-component type="Label" name="new_badge" prop:text="New" prop:role='["badge", "badge-new"]'></anvil-component>
+      </div>
+      <anvil-component type="Label" name="body" prop:role='["ml-body"]'></anvil-component>
+    </div>
+    <anvil-component type="Label" name="when" prop:role='["ml-time"]'></anvil-component>
+  </div>
+  <anvil-component type="Subsudo.Items.BoutCard" name="card"></anvil-component>
+</section>
+</div>
