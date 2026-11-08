@@ -744,7 +744,7 @@ native_deps:
     })();\n</script>\n\n<!-- Prepsto feedback panel: every \"Submit feedback\" link and button opens it (it is the only feedback\
     \ channel). No floating button, no cookies, nothing loads until it is opened. Codes: APP_MAKER/prepsto-links.json -->\n\
     <script src=\"https://prepsto.com/_/theme/widget.js\" data-prepsto=\"z5yjpux\" data-button=\"false\" data-label=\"Submit\
-    \ feedback\" async></script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=471117e2e9\">\n<script src=\"_/theme/app.js?v=7b91de9e7b\"\
+    \ feedback\" async></script>\n<link rel=\"stylesheet\" href=\"_/theme/app.css?v=471117e2e9\">\n<script src=\"_/theme/app.js?v=8c3fa78815\"\
     ></script>\n"
 package_name: Subsudo
 runtime_options:
