@@ -702,7 +702,7 @@ metadata:
 name: Subsudo
 native_deps:
   head_html: |
-    <script src="_/theme/legal-kit.js?v=63bd26b502"></script>
+    <script src="_/theme/legal-kit.js?v=48aaf161b1"></script>
     <!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json and run seo.py, not here) -->
     <link rel="canonical" href="https://subsudo.com/">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -751,7 +751,7 @@ native_deps:
     <link rel="stylesheet" href="_/theme/icons.css?v=13eb9ca384">
     <link rel="stylesheet" href="_/theme/app.css?v=b9e3738100">
     <script src="_/theme/app-kit.js?v=72ac0e6451"></script>
-    <script src="_/theme/ark-music.js?v=884c4f647c"></script>
+    <script src="_/theme/ark-music.js?v=39180862e8"></script>
     <script src="_/theme/ss-core.js?v=03af9ed3dd"></script>
     <script src="_/theme/ss-face.js?v=e17f2b143b"></script>
     <script src="_/theme/ss-motion.js?v=3d7d0bce11"></script>
