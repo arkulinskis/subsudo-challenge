@@ -456,7 +456,7 @@
       el.addEventListener('pointerdown', function (e) { var b = e.target.closest('[data-pad]'); if (b) { e.preventDefault(); pad(+b.getAttribute('data-pad')); } });
       var onKey = function (e) {
         if (!e.key) return; // autofill sends keydown with no key
-        var i = keys.findIndex(function (k) { return k[0] === e.key.toUpperCase() || (k[0] === ' ' && e.key === ' '); });
+        var i = keys.findIndex(function (k) { return k[0] === (e.key || '').toUpperCase() || (k[0] === ' ' && e.key === ' '); });
         if (i >= 0) { e.preventDefault(); pad(i); }
       };
       document.addEventListener('keydown', onKey);
