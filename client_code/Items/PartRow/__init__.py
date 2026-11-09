@@ -46,6 +46,7 @@ class PartRow(PartRowTemplate):
         self._step(1)
 
     def _key(self, event):
-        if event.key in ("ArrowLeft", "ArrowRight"):
+        key = getattr(event, "key", None)  # autofill sends keydown with no key
+        if key in ("ArrowLeft", "ArrowRight"):
             event.preventDefault()
-            self._step(-1 if event.key == "ArrowLeft" else 1)
+            self._step(-1 if key == "ArrowLeft" else 1)
