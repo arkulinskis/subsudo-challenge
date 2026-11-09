@@ -695,10 +695,9 @@ db_schema:
     server: full
     title: Users
 metadata:
-  description: 'Virtual fight club: record a shadow-boxing round with your phone or laptop camera, send it as a challenge,
-    and climb the global and city rankings.'
-  logo_img: asset:icon-512.png
-  title: 'Subsudo: virtual fight club, shadow-box and climb the ranks'
+  description: "Virtual fight club: record a shadow-boxing round with your phone or laptop camera, send it as a challenge, and climb the global and city rankings."
+  logo_img: "asset:icon-512.png"
+  title: "Subsudo: virtual fight club, shadow-box and climb the ranks"
 name: Subsudo
 native_deps:
   head_html: |
