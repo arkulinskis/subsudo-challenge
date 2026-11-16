@@ -141,7 +141,7 @@
 
     // ---- admin (ADMIN_EMAILS in Accounts.py): sign up the first time, sign in after that
     const adminPw = 'Ss-smoke-adm-93Kx-7q';
-    if (!(await signUp('Admin Tester', 'arkulinskis@gmail.com', adminPw))) await signIn('arkulinskis@gmail.com', adminPw);
+    if (!(await signUp('Admin Tester', 'admin@example.com', adminPw))) await signIn('admin@example.com', adminPw);
     for (const t of ['overview', 'challenges', 'log', 'feedback', 'users', 'demo']) await open('#admin/' + t, /Admin/);
     await signOut();
     log.push(bad.length ? 'PROBLEMS: ' + bad.join(' | ') : 'PASSED');

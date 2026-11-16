@@ -58,7 +58,7 @@ record if they sign up later on the same device.
 - **Welcome:** every new member gets a 30-second bout from Coach Bruno (and, while demo data is loaded, a call-out from
   a demo fighter). Unanswered bouts expire after 7 days (invites 14); a no-show counts as a duck.
 
-**For admins** (`#admin`; arkulinskis@gmail.com becomes an admin on first sign-in):
+**For admins** (`#admin`; your admin email (App Secret `admin_emails`) becomes an admin on first sign-in):
 - **Overview:** members, feedback, bouts fought / waiting, rounds recorded and flagged, active challenges.
 - **Challenges:** send a house challenge (house fighter, level Rookie/Club/Pro/Champion, round length, bonus points,
   days to answer, message) to everyone, members idle for N days, members who never fought, one city, or picked
@@ -76,7 +76,7 @@ inviter) 12 / 18 / 6 / 2; bag work 1 (5 a day).
 1. In the Anvil editor: **Create app → Clone from GitHub**, and paste `https://github.com/arkulinskis/subsudo-challenge`.
 2. **Users** service: email + password and "Continue with Google", sign-up allowed (already set in `anvil.yaml`; check it).
 3. Open the app in the editor. If it shows a **Schema Mismatch** alert, choose **"The schema of the source code is correct"** so Anvil creates the tables.
-4. **Run** it and sign up with **arkulinskis@gmail.com** straight away (that account becomes the admin).
+4. **Run** it and sign up with **your admin email** (App Secret `admin_emails`) straight away (that account becomes the admin).
 5. **Publish** (Publish → public URL, or your own domain). Motion sensors and the camera need HTTPS (Anvil gives it).
 
 <!-- libraries:start -->
