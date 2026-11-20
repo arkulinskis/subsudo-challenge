@@ -69,8 +69,10 @@
           <anvil-component type="Button" name="log_button" prop:text="Filter" prop:role='["btn", "ic-filter"]'></anvil-component>
           <anvil-component type="Label" name="log_count" prop:role='["fine-print"]'></anvil-component>
           <span class="ui-spacer"></span>
+          <anvil-component type="Button" name="ref_button" prop:text="Ref older rounds" prop:role='["btn", "ic-shield"]'></anvil-component>
           <anvil-component type="Button" name="csv_button" prop:text="CSV" prop:role='["btn", "ic-download"]'></anvil-component>
         </div>
+        <anvil-component type="Label" name="ref_note" prop:role='["fine-print", "ad-ref-note"]'></anvil-component>
         <div class="ad-logwrap" tabindex="0" aria-label="Fight log">
           <div class="ad-log-row ad-log-head"><b>When</b><b>Kind</b><b>A</b><b>B</b><b class="opt">Devices</b><b>Score</b><b>Result</b><b class="opt">Flags</b></div>
           <anvil-component type="RepeatingPanel" name="log_rows" prop:item_template="Subsudo.Items.LogRow"></anvil-component>

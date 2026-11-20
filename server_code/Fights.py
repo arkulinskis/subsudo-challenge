@@ -49,6 +49,7 @@ def _side(f, side, me, detail):
            "words": f[side + "_words"] or "", "recorded": r is not None, "device": r["device"] if r is not None else None}
     if r is not None and _reveal(f, side, me):
         out["score"], out["stats"] = int(r["score"] or 0), r["stats"]
+        out["ref"] = ref_view(r, gym=out["house"] or bool(r["is_demo"]))
         if detail:
             out["events"] = r["events"] or []
     if f["status"] == "done":
@@ -79,7 +80,7 @@ def bout(f, me, detail=False):
     if st == "done":
         res = f["result"] or {}
         out["result"] = {"winner": f["winner"], "method": res.get("method"), "method_name": res.get("method_name"),
-                         "cards": res.get("cards") or []}
+                         "cards": res.get("cards") or [], "ref": res.get("ref")}
         if my_side:
             out["outcome"] = "draw" if f["winner"] == "draw" else ("win" if f["winner"] == my_side else "loss")
     if my_side == "a" and f["kind"] == "invite":
@@ -92,12 +93,23 @@ def _filter_ok(f, me):
     return not flt.get("city_key") or flt.get("city_key") == me["city_key"]
 
 
+def ref_view(r, gym=False):
+    """What the pages show of a round's Ref's report: {verdict, line, notes}. Rounds recorded before the ref joined
+    (2026-11-20) have no report: the gym's own rounds read as clean, members' rounds say so."""
+    rep = B.ref_of(r["stats"])
+    if rep is None:
+        if gym:
+            return {"verdict": "clean", "line": "Ref: clean round", "notes": []}
+        return {"verdict": "none", "line": "Ref: no report. This round was fought before the ref joined the gym.", "notes": []}
+    return {"verdict": rep.get("verdict") or "clean", "line": rep.get("line") or B.ref_line(rep),
+            "notes": rep.get("notes") or [], "dropped": int(rep.get("dropped") or 0), "retro": bool(rep.get("retro"))}
+
+
 # ------------------------------------------------------------------------------------------------ helpers
 def _round_row(rnd, user, side, who, is_demo=False):
-    stats, score = B.score_round(rnd["events"], rnd["secs"])
+    events, stats, score, flags = B.round_record(rnd)
     return app_tables.rounds.add_row(user=user, side=side, who=who, device=rnd["device"], secs=rnd["secs"], stats=stats,
-                                     events=rnd["events"], score=score, flags=B.round_flags(stats, rnd["secs"], rnd["events"]),
-                                     created=C.now(), is_demo=is_demo)
+                                     events=events, score=score, flags=flags, created=C.now(), is_demo=is_demo)
 
 
 def _new_fight(kind, status, challenger, opponent, rnd, words, a_name, b_name, is_demo=False, **extra):
@@ -126,6 +138,21 @@ def _outcome(winner, side):
     return "draw" if winner == "draw" else ("win" if winner == side else "loss")
 
 
+def _side_name(f, side):
+    """A side's name for public text (ring name, display name or the name a guest typed; never an email)."""
+    user = f["challenger"] if side == "a" else f["opponent"]
+    if side == "a" and f["kind"] == "house":
+        return f["house_name"] or "The House"
+    if user is not None:
+        return public_name(user)
+    return (f["guest_name"] or f["b_name"] or "A friend") if side == "b" else (f["a_name"] or "A fighter")
+
+
+def public_name(u):
+    """Ring name, else the display name they typed; never anything made from their email."""
+    return (u["ring_name"] or u["display_name"] or "A Subsudo fighter") if u is not None else "A Subsudo fighter"
+
+
 def _headline(f, side):
     """'You beat Kofi by knockout' / 'Kofi beat you on points' for one side's mailbox."""
     other = f["b_name"] if side == "a" else f["a_name"]
@@ -150,26 +177,44 @@ def finish(f, when=None):
     when = when or C.now()
     a_r, b_r = f["a_round"], f["b_round"]
     res = B.judge(a_r["stats"], b_r["stats"], a_r["score"] or 0, b_r["score"] or 0)
-    f.update(a_score=a_r["score"], b_score=b_r["score"], result=res, winner=res["winner"], status="done", finished=when)
     ca, cb, kind, w = f["challenger"], f["opponent"], f["kind"], res["winner"]
+    # The ref: a round under review doesn't count toward the rankings. Nobody's rating or record moves, the reviewed
+    # side gets no points, and the clean side keeps its points (at least a draw's: it didn't lose to a real round).
+    review = [s for s, r in (("a", a_r), ("b", b_r)) if not B.ref_counts(r["stats"])]
+    if review:
+        names = [_side_name(f, s) for s in review]
+        res["ref"] = {"sides": review, "names": names, "unranked": True,
+                      "line": "Ref's call: %s round%s under review, so this bout doesn't count toward the rankings."
+                              % (" and ".join("%s's" % n for n in names), "s are" if len(names) > 1 else " is")}
+    f.update(a_score=a_r["score"], b_score=b_r["score"], result=res, winner=res["winner"], status="done", finished=when)
     da = db = 0
     if kind in ("ranked", "open") and ca is not None and cb is not None:
-        outcome_a = 1.0 if w == "a" else (0.5 if w == "draw" else 0.0)
-        da, db = B.elo(F.rating_of(ca), F.rating_of(cb), outcome_a, ca["ranked_fights"], cb["ranked_fights"], res["method"])
-        for u, d, side in ((ca, da, "a"), (cb, db, "b")):
-            o = _outcome(w, side)
-            u.update(rating=F.rating_of(u) + d, ranked_fights=(u["ranked_fights"] or 0) + 1,
-                     wins=(u["wins"] or 0) + (o == "win"), losses=(u["losses"] or 0) + (o == "loss"),
-                     draws=(u["draws"] or 0) + (o == "draw"),
-                     kos=(u["kos"] or 0) + (o == "win" and res["method"] in ("ko", "tko")))
         pa = B.points_for("ranked", _outcome(w, "a"), res["method"])
         pb = B.points_for("ranked", _outcome(w, "b"), res["method"])
+        if not review:
+            outcome_a = 1.0 if w == "a" else (0.5 if w == "draw" else 0.0)
+            da, db = B.elo(F.rating_of(ca), F.rating_of(cb), outcome_a, ca["ranked_fights"], cb["ranked_fights"], res["method"])
+            for u, d, side in ((ca, da, "a"), (cb, db, "b")):
+                o = _outcome(w, side)
+                u.update(rating=F.rating_of(u) + d, ranked_fights=(u["ranked_fights"] or 0) + 1,
+                         wins=(u["wins"] or 0) + (o == "win"), losses=(u["losses"] or 0) + (o == "loss"),
+                         draws=(u["draws"] or 0) + (o == "draw"),
+                         kos=(u["kos"] or 0) + (o == "win" and res["method"] in ("ko", "tko")))
+        else:
+            pa = 0 if "a" in review else max(pa, B.POINTS["draw"])
+            pb = 0 if "b" in review else max(pb, B.POINTS["draw"])
     elif kind == "house":
         pa, pb = 0, B.points_for("house", _outcome(w, "b"), res["method"])
         if w == "b" and f["campaign"] is not None:
             pb += int(f["campaign"]["bonus"] or 0)
+        if "b" in review:
+            pb = 0
     else:  # invite: the guest has no account (they can claim the bout later)
         pa, pb = B.points_for("guest", _outcome(w, "a"), res["method"]), 0
+        if "a" in review:
+            pa = 0
+        elif "b" in review:
+            pa = max(pa, B.POINTS["guest_draw"])
     f.update(rating_a=da, rating_b=db, points_a=pa, points_b=pb)
     for u, side, r in ((ca, "a", a_r), (cb, "b", b_r)):
         if u is None:
@@ -179,10 +224,15 @@ def finish(f, when=None):
         o = _outcome(w, side)
         hurt = min(B.HURT_MAX, F.hurt_level_at(u, when) + B.damage(o, res["method"], (other["stats"] or {}).get("punches", 0)))
         u.update(hurt_level=round(hurt, 2), hurt_at=when, hurt_kind="ko" if (o == "loss" and res["method"] == "ko") else "")
-        u.update(last_fight=when, best_speed=max(u["best_speed"] or 0, st.get("top_speed", 0)),
-                 total_punches=(u["total_punches"] or 0) + st.get("punches", 0))
+        if side not in review:  # a round under review counts for nothing: no activity, best speed or punches
+            u.update(last_fight=when, best_speed=max(u["best_speed"] or 0, st.get("top_speed", 0)),
+                     total_punches=(u["total_punches"] or 0) + st.get("punches", 0))
         _log_points(u, pa if side == "a" else pb, KIND_LABELS.get(kind, "Bout") + ": " + _outcome(w, side), f)
-        Inbox.send(u, "result", _headline(f, side), "Judges' scores are in. Open the bout to see the cards and the punch log.", f)
+        body = "Judges' scores are in. Open the bout to see the cards and the punch log."
+        if review:
+            body += " The ref put %s under review, so this bout doesn't count toward the rankings." % (
+                "your round" if side in review and len(review) == 1 else "a round")
+        Inbox.send(u, "result", _headline(f, side), body, f)
 
 
 def sweep():
@@ -201,8 +251,7 @@ def sweep():
 def _bot_answer(f, bot):
     """Demo fighters answer straight away with a round that fits their rating."""
     secs = int((f["rules"] or {}).get("secs") or 60)
-    rnd = B.house_round(_level_for(F.rating_of(bot)), secs, seed=f.get_id())
-    rnd["device"] = "phone"
+    rnd = B.house_round(_level_for(F.rating_of(bot)), secs, seed=f.get_id(), device="phone")
     r = _round_row(rnd, bot, "b", F.ring_name(bot), bool(bot["is_demo"]))
     r["fight"] = f
     f["b_round"] = r
@@ -265,7 +314,7 @@ def create_open_call(rnd, words="", city_only=False):
 def create_invite(rnd, words="", friend_name=""):
     """A link for a friend without an account. Returns the token; the page builds the link."""
     me = C.require_user()
-    if _need_card(me):
+    if not (me["ring_name"] or me["display_name"]):  # a friend knows you by name: a ring name isn't needed for invites
         return C.fail(_need_card(me))
     rnd, err = B.clean_round(rnd)
     if err:
@@ -373,19 +422,97 @@ def save_training(rnd):
         return C.fail(err)
     if C.rate_limited("training", 60, 3600):
         return C.fail("That's a lot of rounds. Rest is training too.")
-    prev = list(app_tables.rounds.search(user=me, side="train"))
+    prev = [p for p in app_tables.rounds.search(user=me, side="train") if not B.ref_review(p["stats"])]
     r = _round_row(rnd, me, "train", F.ring_name(me))
+    st = r["stats"]
+    counts = B.ref_counts(st)  # a round under review earns nothing and sets no bests
     today = C.now() - dt.timedelta(hours=24)
     given = sum(p["points"] or 0 for p in app_tables.points_log.search(user=me, reason="Bag work") if p["created"] >= today)
-    pts = B.POINTS["training"] if given < B.TRAINING_POINTS_PER_DAY else 0
+    pts = B.POINTS["training"] if (given < B.TRAINING_POINTS_PER_DAY and counts) else 0
     if pts:
         me["points"] = (me["points"] or 0) + pts
         app_tables.points_log.add_row(user=me, points=pts, reason="Bag work", fight=None, created=C.now(), is_demo=False)
-    st = r["stats"]
-    me.update(best_speed=max(me["best_speed"] or 0, st["top_speed"]), total_punches=(me["total_punches"] or 0) + st["punches"])
+    if counts:
+        if rnd["device"] != "pads":  # taps aren't punches: pad rounds don't set your top speed
+            me["best_speed"] = max(me["best_speed"] or 0, st["top_speed"])
+        me["total_punches"] = (me["total_punches"] or 0) + st["punches"]
     best = max([p["score"] or 0 for p in prev] or [0])
-    return C.ok(score=r["score"], stats=st, points=pts, personal_best=r["score"] > best and bool(prev),
-                best=max(best, r["score"]))
+    mine = r["score"] if counts else 0
+    return C.ok(score=r["score"], stats=st, points=pts, personal_best=mine > best and bool(prev), best=max(best, mine),
+                ref=ref_view(r), counts=counts, capped=counts and not pts)
+
+
+# ------------------------------------------------------------------------------------------------ try a round (#try)
+TRY_LEVELS = ("rookie", "club", "pro", "champ")
+
+
+@anvil.server.callable
+def try_round(rnd):
+    """#try: one round with no account. Scored with the ref, then judged against the house at all four levels.
+    Writes nothing: the browser keeps the round until the visitor signs up (Pages/Home then saves it as bag work)."""
+    rnd, err = B.clean_round(rnd, training=True)
+    if err:
+        return C.fail(err)
+    if C.rate_limited("try", 20, 3600):
+        return C.fail("That's 20 try-out rounds this hour. Sign up free to keep training, or come back in a while.")
+    events, stats, score, flags = B.round_record(rnd)
+    counts = B.ref_counts(stats)
+    house = []
+    for level in TRY_LEVELS:
+        h = B.house_round(level, rnd["secs"], seed="try-" + level)
+        hs, hc = B.score_round(h["events"], rnd["secs"])
+        j = B.judge(stats, hs, score, hc)
+        house.append({"level": level, "name": B.HOUSE_LEVEL_NAMES[level], "score": hc, "winner": j["winner"],
+                      "beat": counts and j["winner"] == "a", "draw": counts and j["winner"] == "draw",
+                      "method": j["method_name"]})
+    beaten = [x["name"] for x in house if x["beat"]]
+    if not counts:
+        verdict = "The ref put this round under review, so the house doesn't count it. Try again with real punches."
+    elif not beaten:
+        verdict = "The house wins this one. Rookie is %s points away: throw both hands and mix in hooks." % max(
+            0, house[0]["score"] - score)
+    elif len(beaten) == len(TRY_LEVELS):
+        verdict = "You'd beat the house at every level, Champion included. The world board is waiting."
+    else:
+        verdict = "You'd beat the house at %s level." % beaten[-1]
+    return C.ok(score=score, stats=stats, ref=stats["ref"], house=house, verdict=verdict, counts=counts,
+                device=rnd["device"], secs=rnd["secs"])
+
+
+# ------------------------------------------------------------------------------------------------ public bout pages
+def public_bout(f):
+    """bout(f, None, detail=True) for anyone with the link: finished bouts only, names only (never an email or a
+    name made from one), no invite token."""
+    b = bout(f, None, detail=True)
+    for side in ("a", "b"):
+        s = b[side]
+        s["name"] = _side_name(f, side)
+        if s.get("fighter"):
+            s["fighter"]["ring"] = s["name"]
+            s["fighter"].pop("name", None)
+    b["public"] = True
+    return b
+
+
+def public_headline(f):
+    """'Kofi beat Ana by knockout' (or 'Kofi and Ana fought to a draw') for link previews and the poster."""
+    a, b = _side_name(f, "a"), _side_name(f, "b")
+    res = f["result"] or {}
+    how = {"ko": "by knockout", "tko": "by TKO", "ud": "by unanimous decision", "sd": "by split decision",
+           "md": "by majority decision"}.get(res.get("method"), "on points")
+    if f["winner"] == "draw":
+        return "%s and %s fought to a draw" % (a, b)
+    win, lose = (a, b) if f["winner"] == "a" else (b, a)
+    return "%s beat %s %s" % (win, lose, how)
+
+
+@anvil.server.callable
+def get_public_bout(fight_id):
+    """#bout/<id> for visitors without an account (shared posters and /b/<id> links): finished bouts only."""
+    f = C.row_by_id(app_tables.fights, fight_id)
+    if f is None or f["status"] != "done":
+        return C.fail("Only finished bouts can be opened without an account.")
+    return C.ok(bout=public_bout(f), headline=public_headline(f))
 
 
 def guest_key_hash(key):

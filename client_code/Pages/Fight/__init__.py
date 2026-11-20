@@ -21,9 +21,10 @@ class Fight(FightTemplate):
         self.arg = args[1] if len(args) > 1 else None
         self.bout = ss.loose(None)
         self.fighter = ss.loose(None)
+        self._tryout = ss.loose(None)
         self._url = self._msg = ""
         self._parts("setup")
-        for p in (self.answer_head, self.call_head, self.plain_head, self.friend_field, self.city_only_box):
+        for p in (self.answer_head, self.call_head, self.plain_head, self.friend_field, self.city_only_box, self.tryout_card):
             p.visible = False
         state.set_control_attr(self.words_box, "maxlength", 280)
         state.set_control_attr(self.friend_box, "maxlength", 40)
@@ -119,15 +120,31 @@ class Fight(FightTemplate):
         self._plain("Invite a friend", "Record your round, get a link, send it. Your friend fights back from their own phone or laptop, "
                     "no account needed. You get points; it doesn't touch your rating.", "Loser buys the protein shakes.")
         self.friend_field.visible = True
+        t = ss.try_round_saved()
+        self._tryout = t if (t and not t.get("invited") and t.get("device") in ("phone", "camera")) else None
+        if self._tryout:
+            tr = self._tryout
+            self.tryout_card.visible = True
+            self.tryout_text.text = ("The round you played before signing up: %s points, %s punches with your %s, %s seconds. "
+                                     "Send it as your call-out, or record a new one below." % (
+                                         tr.get("score", 0), tr.get("punches", 0), tr.get("device"), tr["round"].get("secs")))
         self.recorder.start(self._keep_invite, allow_secs=True, keep_label="Make the link")
 
-    def _keep_invite(self, rnd):
+    @handle("tryout_button", "click")
+    def tryout_button_click(self, **event_args):
+        if self._tryout:
+            self._keep_invite(self._tryout["round"], tryout=True)
+
+    def _keep_invite(self, rnd, tryout=False):
         friend = (self.friend_box.text or "").strip()
         res = self._send("create_invite", rnd, self.words_box.text or "", friend)
         if not res:
             return
+        if tryout:
+            ss.try_round_mark(invited=True)
         url = ss.invite_url(res["token"])
-        msg = "I just threw %s punches on Subsudo. Your turn: one round, your phone or your camera." % rnd["stats"]["punches"]
+        punches = (res["bout"]["a"].get("stats") or {}).get("punches", 0)
+        msg = "I just threw %s punches on Subsudo. Your turn: one round, your phone or your camera." % punches
         self._url, self._msg = url, msg
         self._sent("Your link is ready", "Send it to %s. When they fight back, the result lands in your Mail." % (friend or "your friend"))
         self.share_part.visible = True
@@ -162,7 +179,12 @@ class Fight(FightTemplate):
         s = res["stats"]
         self.trained_text.text = "%s punches · %s blocks · top %.1f m/s · best ever %s · %s" % (
             s["punches"], s["blocks"], s["top_speed"], res["best"],
-            ("+%s point" % res["points"]) if res.get("points") else "no more training points today")
+            ("+%s point" % res["points"]) if res.get("points") else
+            ("no more training points today" if res.get("counts", True) else "no points for a round under review"))
+        ref = res.get("ref") or {}
+        self.trained_ref.text = ref.get("line") or ""
+        self.trained_ref.role = ["ss-ref-line", "fg-ref", "ref-" + (ref.get("verdict") or "none")]
+        self.trained_ref.visible = bool(ref)
         if best:
             ss.bell(2)
 
@@ -183,6 +205,7 @@ class Fight(FightTemplate):
         self.reveal_poster.bout = b
         self.reveal_result.bout = b
         self.reveal_bars.bout = b
+        self.reveal_share.bout = b
         state.set_attr(self.reveal_log, "href", router.href("bout", b["id"]))
         other = b["b"] if b.get("my_side") == "a" else b["a"]
         f = other.get("fighter")

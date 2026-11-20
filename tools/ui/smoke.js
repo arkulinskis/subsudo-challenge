@@ -87,7 +87,15 @@
     if (!$('.rk-pod')) bad.push('#rankings: no podium');
     await open('#rankings/week', /7 days/);
     await open('#rankings/city', /Rankings/);
-    if (fighterHash) await open(fighterHash, /Recent bouts/);
+    if (fighterHash) {
+      await open(fighterHash, /Recent bouts/);
+      const pub = $('.ss-bout a.ui-btn[href^="#bout/"]');  // a finished bout, read-only for visitors
+      if (pub) {
+        await open(pub.getAttribute('href'), /beat them/);
+        if (!/Ref/.test(($('.ss-result') || {}).innerText || '')) bad.push('public bout: no Ref line');
+      }
+    }
+    await open('#try', /No account/);
     await open('#invite/not-a-real-token', /link is closed/);
     await open('#auth', /Sign in/);
     await open('#auth/signup', /Create account/);

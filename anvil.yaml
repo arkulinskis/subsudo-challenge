@@ -732,7 +732,7 @@ metadata:
 name: Subsudo
 native_deps:
   head_html: |
-    <script src="_/theme/legal-kit.js?v=48aaf161b1"></script>
+    <script src="_/theme/legal-kit.js?v=89be4e3ed9"></script>
     <!-- seo:start (APP_MAKER/seo: edit seo/apps/subsudo.json and run seo.py, not here) -->
     <link rel="canonical" href="https://subsudo.com/">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -788,13 +788,14 @@ native_deps:
 
     <!-- Prepsto feedback panel: every "Submit feedback" link and button opens it (it is the only feedback channel). No floating button, no cookies, nothing loads until it is opened. Codes: APP_MAKER/prepsto-links.json -->
     <script src="https://prepsto.com/_/theme/widget.js" data-prepsto="z5yjpux" data-button="false" data-label="Submit feedback" async></script>
-    <link rel="stylesheet" href="_/theme/icons.css?v=13eb9ca384">
-    <link rel="stylesheet" href="_/theme/app.css?v=b9e3738100">
-    <script src="_/theme/app-kit.js?v=72ac0e6451"></script>
-    <script src="_/theme/ark-music.js?v=39180862e8"></script>
+    <link rel="stylesheet" href="_/theme/icons.css?v=b100dfa48c">
+    <link rel="stylesheet" href="_/theme/app.css?v=2c92c4f709">
+    <script src="_/theme/app-kit.js?v=c1b7e40873"></script>
+    <script src="_/theme/ark-music.js?v=4ee0f1e082"></script>
     <script src="_/theme/ss-core.js?v=03af9ed3dd"></script>
     <script src="_/theme/ss-face.js?v=e17f2b143b"></script>
-    <script src="_/theme/ss-motion.js?v=3d7d0bce11"></script>
+    <script src="_/theme/ss-motion.js?v=d7601734b9"></script>
+    <script src="_/theme/ss-poster.js?v=96a2162e3e"></script>
 package_name: Subsudo
 runtime_options:
   client_version: '3'

@@ -33,6 +33,17 @@ class Result(ResultTemplate):
         self.a_head.text, self.b_head.text = a_name, b_name
         self.judges.items = [{"judge": c["judge"], "looks": LOOKS.get(c.get("looks_at"), ""), "a": c["a"], "b": c["b"]}
                              for c in r.get("cards") or []]
+        # the fair-fight referee: one line per round (clean / punches taken away / under review), and its call
+        for k, row, who, line in (("a", self.a_ref_row, self.a_ref_who, self.a_ref), ("b", self.b_ref_row, self.b_ref_who, self.b_ref)):
+            ref = b[k].get("ref") or {}
+            row.visible = bool(ref)
+            who.text = ss.bout_name(b[k])
+            line.text = ref.get("line") or ""
+            verdict = ref.get("verdict") or "none"
+            line.role = ["ss-ref-line", "ref-" + verdict]
+        call = (r.get("ref") or {}).get("line") or ""
+        self.ref_call.text = call
+        self.ref_call.visible = bool(call)
 
     @property
     def bout(self):

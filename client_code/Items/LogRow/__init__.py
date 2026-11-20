@@ -19,4 +19,7 @@ class LogRow(LogRowTemplate):
             self.result.text = "draw" if f["winner"] == "draw" else "%s · %s" % (f["winner"].upper(), f["method"])
         else:
             self.result.text = f["status"]
-        self.flags.text = ", ".join(f.get("flags") or [])
+        self.flags.text = ", ".join(x for x in (f.get("flags") or []) if x != "under review")
+        self.review.visible = bool(f.get("review"))
+        if f.get("ref"):
+            state.set_attr(self.row, "title", f["ref"])

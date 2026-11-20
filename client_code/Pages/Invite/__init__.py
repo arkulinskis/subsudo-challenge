@@ -78,6 +78,7 @@ class Invite(InviteTemplate):
         self.result_poster.bout = b
         self.result.bout = b
         self.bars.bout = b
+        self.share.bout = b
         self.after_title.text = ("You beat %s. Make it official." % ch.get("ring", "them")) if guest_won else \
             "Too close to call." if b["result"]["winner"] == "draw" else "Want a rematch?"
         state.heading(self.after_title, 1)

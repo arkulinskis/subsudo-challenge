@@ -22,4 +22,10 @@ toolbox_item:
     </div>
     <anvil-component type="RepeatingPanel" name="judges" prop:item_template="Subsudo.Items.JudgeRow"></anvil-component>
   </div>
+  <div class="ss-ref" role="group" aria-label="The ref's report">
+    <h3 class="ss-ref-h"><i class="ic ic-shield"></i>The ref's report</h3>
+    <div class="ss-ref-row" anvil:name="a_ref_row"><anvil-component type="Label" name="a_ref_who" prop:role='["ss-ref-who"]'></anvil-component><anvil-component type="Label" name="a_ref" prop:role='["ss-ref-line"]'></anvil-component></div>
+    <div class="ss-ref-row" anvil:name="b_ref_row"><anvil-component type="Label" name="b_ref_who" prop:role='["ss-ref-who"]'></anvil-component><anvil-component type="Label" name="b_ref" prop:role='["ss-ref-line"]'></anvil-component></div>
+    <anvil-component type="Label" name="ref_call" prop:role='["ss-ref-call"]'></anvil-component>
+  </div>
 </div>

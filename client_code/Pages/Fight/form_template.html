@@ -29,6 +29,14 @@
           </label>
           <anvil-component type="CheckBox" name="city_only_box"></anvil-component>
         </div>
+        <div class="ui-card fg-tryout" anvil:name="tryout_card">
+          <i class="ic ic-glove"></i>
+          <div class="fg-tryout-text">
+            <h2 class="card-h">Use your try-out round</h2>
+            <anvil-component type="Label" name="tryout_text" prop:role='["muted"]'></anvil-component>
+          </div>
+          <anvil-component type="Button" name="tryout_button" prop:text="Send it to a friend" prop:role='["btn", "btn-primary", "ic-send"]'></anvil-component>
+        </div>
         <anvil-component type="Subsudo.Components.Recorder" name="recorder"></anvil-component>
       </div>
 
@@ -40,6 +48,7 @@
         <anvil-component type="Subsudo.Components.Poster" name="reveal_poster"></anvil-component>
         <div class="ui-card"><anvil-component type="Subsudo.Components.Result" name="reveal_result"></anvil-component></div>
         <div class="ui-card fg-gap"><anvil-component type="Subsudo.Components.VsBars" name="reveal_bars"></anvil-component></div>
+        <div class="ui-card fg-gap"><anvil-component type="Subsudo.Components.ShareBout" name="reveal_share"></anvil-component></div>
         <div class="ui-row fg-acts">
           <a class="ui-btn primary" anvil:name="reveal_log" href="#home"><i class="ic ic-ranks"></i>Punch log &amp; words</a>
           <a class="ui-btn" anvil:name="reveal_rematch" href="#home"><i class="ic ic-refresh"></i>Rematch</a>
@@ -77,6 +86,7 @@
           <anvil-component type="Label" name="trained_title" prop:role='["fg-done-title"]'></anvil-component>
           <anvil-component type="Label" name="trained_score" prop:role='["fg-score"]'></anvil-component>
           <anvil-component type="Label" name="trained_text" prop:role='["muted"]'></anvil-component>
+          <anvil-component type="Label" name="trained_ref" prop:role='["ss-ref-line", "fg-ref"]'></anvil-component>
           <div class="ui-row fg-center">
             <anvil-component type="Button" name="again_button" prop:text="Another round" prop:role='["btn", "btn-primary", "ic-refresh"]'></anvil-component>
             <a class="ui-btn" href="#find">Find a real fight</a>

@@ -47,10 +47,9 @@ def answer_invite(token, guest_name, rnd, guest_key):
     rnd, err = B.clean_round(rnd, (f["rules"] or {}).get("secs"))
     if err:
         return C.fail(err)
+    events, stats, score, flags = B.round_record(rnd)  # refereed in clean_round
     r = app_tables.rounds.add_row(user=None, side="b", who=name, device=rnd["device"], secs=rnd["secs"], created=C.now(),
-                                  events=rnd["events"], is_demo=False, fight=f)
-    stats, score = B.score_round(rnd["events"], rnd["secs"])
-    r.update(stats=stats, score=score, flags=B.round_flags(stats, rnd["secs"], rnd["events"]))
+                                  events=events, is_demo=False, fight=f, stats=stats, score=score, flags=flags)
     f.update(guest_name=name, b_name=name, b_round=r, guest_key=Fights.guest_key_hash(guest_key) if guest_key else None)
     Fights.finish(f)
     return C.ok(bout=Fights.bout(f, None, detail=True))
@@ -74,6 +73,8 @@ def claim_invite(token, guest_key):
         f["b_round"]["user"] = me
     outcome = "draw" if f["winner"] == "draw" else ("win" if f["winner"] == "b" else "loss")
     pts = B.points_for("guest", outcome, (f["result"] or {}).get("method"))
+    if f["b_round"] is not None and not B.ref_counts(f["b_round"]["stats"]):
+        pts = 0  # the ref put the guest's round under review
     f["points_b"] = pts
     Fights._log_points(me, pts, "Claimed invite bout: " + outcome, f)
     me["last_fight"] = C.now()

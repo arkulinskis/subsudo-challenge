@@ -130,8 +130,10 @@ assert bob["is_admin"] is False
 Bx = M["Boxing"]
 r, err = Bx.clean_round({"device": "phone", "secs": 30, "events": [[100, "R", "s", 6], [50, "L", "u", 99], [70, "X", "s", 3],
                                                                    "junk", [999999, "L", "s", 4], [120, "L", "b", 2]]})
-assert err is None and [e[0] for e in r["events"]] == [50, 100, 120], "sorted, junk + out-of-time dropped"
-assert r["events"][0][3] == Bx.MAX_SPEED, "speeds are capped"
+assert err is None and [e[0] for e in r["events"]] == [100], "junk dropped; the ref drops wrong-hand and after-the-bell events"
+assert r["ref"]["verdict"] == "adjusted" and r["ref"]["dropped"] == 3
+assert Bx.clean_round({"device": "camera", "secs": 30, "events": [[100, "R", "s", 99], [900, "R", "s", 6]]})[0]["events"] == [[900, "R", "s", 6.0]], (
+    "speeds over the sensors' limit are taken away")
 assert Bx.clean_round({"device": "toaster", "secs": 30, "events": []})[1]
 assert Bx.clean_round({"device": "phone", "secs": 45, "events": []})[1]
 assert Bx.clean_round({"device": "phone", "secs": 30, "events": []}, 60)[1], "must match the bout's round length"
@@ -155,9 +157,7 @@ assert Bx.tier(1360) == "Champion" and Bx.tier(800) == "Bag Puncher"
 
 
 def rnd(level="club", secs=60, seed=3, device="phone"):
-    x = Bx.house_round(level, secs, seed=seed)
-    x["device"] = device
-    return x
+    return Bx.house_round(level, secs, seed=seed, device=device)  # plays by the ref's rules for that device
 
 
 # ---------------------------------------------------------------------------------- the gym, fighter cards, demo data
@@ -425,7 +425,7 @@ if "legal_server" in M:
 # ---------------------------------------------------------------------------------- every callable is covered by a permission check
 # A callable that changes data without require_user / a C.require_* check is a security hole. List the public ones here.
 PUBLIC = {"log_client_error", "session_ping", "get_me", "submit_feedback", "legal_state", "legal_accept", "get_fighter", "list_cities", "get_rankings",
-          "get_invite", "answer_invite", "avatar_parts"}
+          "get_invite", "answer_invite", "avatar_parts", "try_round", "get_public_bout"}
 for name, (f, need) in sorted(anvil.server.CALLABLES.items()):
     if name in PUBLIC:
         continue

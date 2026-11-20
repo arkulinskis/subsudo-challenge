@@ -145,6 +145,59 @@ def copy(text):
     window.SS.copy(text)
 
 
+def bout_url(bout_id):
+    """The bout's public link: <site>/b/<a-b> (a link preview with the names, then the read-only bout page)."""
+    return str(window.SS.boutUrl(bout_id))
+
+
+def headline(b):
+    """'Kofi beat Ana by knockout' / 'Kofi and Ana fought to a draw' for a finished bout (share text)."""
+    r = b.get("result") or {}
+    a, bb = bout_name(b["a"]), bout_name(b["b"])
+    how = {"ko": "by knockout", "tko": "by TKO", "ud": "by unanimous decision", "sd": "by split decision",
+           "md": "by majority decision"}.get(r.get("method") or "", "on points")
+    if r.get("winner") == "draw":
+        return "%s and %s fought to a draw" % (a, bb)
+    win, lose = (a, bb) if r.get("winner") == "a" else (bb, a)
+    return "%s beat %s %s" % (win, lose, how)
+
+
+def poster_prepare(bout, img_node):
+    """Draw the 1080x1350 fight poster (theme/assets/ss-poster.js) into an <img>; returns the PNG's size in bytes."""
+    return window.SS.posterPrepare(js(bout), img_node)
+
+
+def share_poster(bout, text):
+    """Share sheet with the poster on phones, else download + copy the link: 'shared' | 'downloaded' | 'cancelled'."""
+    return str(window.SS.sharePoster(js(bout), text))
+
+
+TRY_KEY = "try_round"
+TRY_HOURS = 24
+
+
+def try_round_saved():
+    """The round played on #try ({round, at, score, device, claimed, invited}) if it's under 24 hours old, else None."""
+    t = store_dict(TRY_KEY, None)
+    if not t or not isinstance(t.get("round"), dict):
+        return None
+    if (window.Date.now() - float(t.get("at") or 0)) > TRY_HOURS * 3600 * 1000:
+        state.store_set(TRY_KEY, None)
+        return None
+    return t
+
+
+def try_round_mark(**flags):
+    """Mark the stored try-out round (claimed=True after it went into bag work, invited=True after an invite used it);
+    forget it once both happened."""
+    t = try_round_saved()
+    if not t:
+        return
+    t.update(flags)
+    done = t.get("claimed") and (t.get("invited") or t.get("device") not in ("phone", "camera"))
+    state.store_set(TRY_KEY, None if done else t)
+
+
 def store_dict(key, default):
     """A dict from this browser's storage as real Python (UI.store.get gives JS proxies for objects)."""
     try:

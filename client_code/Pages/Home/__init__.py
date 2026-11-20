@@ -8,7 +8,8 @@ class Home(HomeTemplate):
     """#home, the gym (Operate): your fighter card (rating, tier, record, belts, rank), bouts waiting for your answer,
     the four ways to fight (gym-bag tiles), bouts you're waiting on, recent results, your city's board, fair fights
     and bag work. One call: get_gym. First it claims a guest bout fought on this device before signing up
-    (Pages/Invite leaves the token in the browser's storage under 'claim')."""
+    (Pages/Invite leaves the token in the browser's storage under 'claim') and the round played on #try
+    (storage 'try_round', saved once as bag work)."""
 
     def __init__(self, args=(), **properties):
         super().__init__(**properties)
@@ -18,6 +19,7 @@ class Home(HomeTemplate):
             self._draw(d)
 
     def _claim(self):
+        self._claim_try()
         c = ss.store_dict("claim", None)
         if not c or not c.get("token"):
             return
@@ -25,6 +27,17 @@ class Home(HomeTemplate):
         r = state.call_quiet("claim_invite", c["token"], c.get("key"))
         if isinstance(r, dict) and r.get("ok") and not r.get("already"):
             state.toast("Your invite bout is on your record (+%s points)" % r.get("points", 0), "ok")
+
+    def _claim_try(self):
+        """The round played on #try before signing up (under 24 hours old) goes into bag work, once."""
+        t = ss.try_round_saved()
+        if not t or t.get("claimed"):
+            return
+        ss.try_round_mark(claimed=True)  # marked first: a failed call never saves it twice
+        r = state.call_quiet("save_training", t["round"])
+        if isinstance(r, dict) and r.get("ok"):
+            state.toast("+%s point: your try-out round" % r["points"] if r.get("points") else
+                        "Your try-out round is in your bag work", "ok")
 
     def _draw(self, d):
         me, rank = d["me"], d["rank"]

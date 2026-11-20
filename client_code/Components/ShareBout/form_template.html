@@ -1,0 +1,30 @@
+---
+custom_component: true
+help_text: 'Share a finished bout: the 1080x1350 fight poster (drawn by theme/assets/ss-poster.js) and its public /b/<id> link.'
+properties:
+- default_binding_prop: true
+  default_value: null
+  description: A finished bout dict from the server
+  name: bout
+  type: object
+toolbox_item:
+  group: Subsudo
+  title: Share the bout
+---
+<div class="ss-share-host">
+  <div class="ss-share">
+    <div class="ss-share-pic" anvil:dom-node="pic_box">
+      <img alt="" anvil:dom-node="thumb" width="1080" height="1350">
+      <span class="ss-share-wait" anvil:dom-node="wait">Drawing the poster…</span>
+    </div>
+    <div class="ss-share-copy">
+      <h2 class="card-h">Share the poster</h2>
+      <anvil-component type="Label" name="lead" prop:role='["muted"]'></anvil-component>
+      <div class="ss-share-acts">
+        <anvil-component type="Button" name="share_button" prop:text="Share the poster" prop:role='["btn", "btn-primary", "ic-send"]'></anvil-component>
+        <anvil-component type="Button" name="link_button" prop:text="Copy the link" prop:role='["btn", "ic-copy"]'></anvil-component>
+      </div>
+      <anvil-component type="Label" name="note" prop:role='["fine-print"]'></anvil-component>
+    </div>
+  </div>
+</div>

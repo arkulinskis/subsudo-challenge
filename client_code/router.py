@@ -18,7 +18,7 @@ PAGES = {
     "auth": ("guest", "Sign in"),
     "home": ("user", "The gym"),
     "fight": ("user", "Fight"),
-    "bout": ("user", "Bout"),
+    "bout": (None, "Bout"),  # visitors see finished bouts read-only (shared posters, /b/<id> links)
     "find": ("user", "Find a fight"),
     "rankings": (None, "Rankings"),
     "mail": ("user", "Mail"),
@@ -27,6 +27,7 @@ PAGES = {
     "locker": ("user", "Locker room"),
     "profile": ("user", "Your fighter card"),
     "admin": ("admin", "Admin"),
+    "try": (None, "Try a round"),  # one round with no account (not in NAV)
 }
 NAV = [("home", "Gym", "glove"), ("find", "Find", "megaphone"), ("rankings", "Ranks", "ranks"), ("mail", "Mail", "mail")]
 APP_NAME = "Subsudo"
@@ -71,6 +72,9 @@ def _form(name):
     if name == "profile":
         from .Pages.Profile import Profile
         return Profile
+    if name == "try":
+        from .Pages.Try import Try
+        return Try
     from .Pages.Admin import Admin
     return Admin
 

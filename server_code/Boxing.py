@@ -83,7 +83,6 @@ def clean_round(rnd, secs=None, training=False):
     raw = rnd.get("events")
     if not isinstance(raw, list):
         return None, "That round didn't come through. Please record it again."
-    limit_ms = rsecs * 1000 + 15000  # the phone has a hand switch break in the middle
     events = []
     for e in raw[:2000]:
         if not isinstance(e, (list, tuple)) or len(e) < 4:
@@ -92,11 +91,169 @@ def clean_round(rnd, secs=None, training=False):
             t, hand, typ, speed = int(e[0]), str(e[1]), str(e[2]), float(e[3])
         except (TypeError, ValueError):
             continue
-        if hand not in ("L", "R") or typ not in TYPES or t < 0 or t > limit_ms or speed != speed:
+        if hand not in ("L", "R") or typ not in TYPES or t < 0 or speed != speed:
             continue
         events.append([t, hand, typ, round(clamp(speed, 0.0, MAX_SPEED), 2)])
     events.sort(key=lambda e: e[0])
-    return {"device": device, "secs": rsecs, "events": events[:1200]}, None
+    out = {"device": device, "secs": rsecs, "events": events}
+    kept, report = referee(out)  # the fair-fight referee: only what a real recorder can produce is scored
+    out["events"], out["ref"] = kept[:1200], report
+    return out, None
+
+
+# ------------------------------------------------------------------------------------------------ the referee
+# The recorders (theme/assets/ss-motion.js) can't produce some things: a fist back within 330 ms (phone) / 320 ms
+# (camera) of its last punch, a speed over 13 m/s (both clamp there), a right hand in the phone's left half (the
+# phone gives the right hand first, then the left; the timestamps leave out the 5-second switch), anything after the
+# final bell. Real rounds never trip these rules, so whatever trips them was made some other way: it is dropped and
+# the round is scored on what's left. Patterns no fist makes (a metronome, one speed all round, top speed on every
+# punch) only add a note, and a note puts the round "under review": it's shown to everyone, but it doesn't count
+# toward ratings, records, points or bests. Pads (training only) are tapped, so they get looser timing rules.
+REF_GAP_MS = 280            # same hand again sooner than this: dropped (engines: 320-330 ms)
+REF_PAD_GAP_MS = 90         # pads: a finger can drum fast, keyboard auto-repeat can't count
+REF_MAX_SPEED = 13.0        # the engines clamp speeds to 13 m/s
+REF_PAD_MAX_SPEED = 6.0     # the pads make 3.2-5.8 m/s
+REF_SWITCH_SLACK_MS = 200   # phone: how far a hand may stray past the half-way switch
+REF_BELL_SLACK_MS = 500     # after the final bell
+REF_STEADY_MIN = 20         # punches before "machine-like timing" is judged
+REF_STEADY_CV = 0.05        # gaps that vary less than 5% are a metronome, not a fighter
+REF_LIMIT_SHARE = 0.6       # this share of punches at the speed limit = a shaken phone or a script
+REF_MAX_RATE = 5.0          # punches a second over the whole round (camera max is ~6; fighters stay well under)
+REF_REVIEW_SHARE = 0.2      # more than this share dropped (and at least 5): under review
+REF_REASONS = {"fast": "faster than a fist can come back", "speed": "faster than the sensors can measure",
+               "hand": "with the wrong hand for that half of the round", "late": "after the final bell"}
+REF_ORDER = ("fast", "speed", "hand", "late")
+
+
+def _cv(values):
+    if len(values) < 2:
+        return 1.0
+    mean = sum(values) / float(len(values))
+    if mean <= 0:
+        return 0.0
+    var = sum((v - mean) ** 2 for v in values) / float(len(values))
+    return (var ** 0.5) / mean
+
+
+def _steady(punches):
+    """True when the gaps between punches (all of them, or one hand's) vary less than REF_STEADY_CV."""
+    groups = [punches] + [[e for e in punches if e[1] == h] for h in ("L", "R")]
+    for g in groups:
+        if len(g) >= REF_STEADY_MIN:
+            gaps = [b[0] - a[0] for a, b in zip(g, g[1:])]
+            if _cv(gaps) < REF_STEADY_CV:
+                return True
+    return False
+
+
+def _moves(n_punch, n_block):
+    if n_block and not n_punch:
+        return "%d block%s" % (n_block, "" if n_block == 1 else "s")
+    if n_punch and not n_block:
+        return "%d punch%s" % (n_punch, "" if n_punch == 1 else "es")
+    return "%d moves" % (n_punch + n_block)
+
+
+def ref_line(report):
+    """The sentence under the judges' cards: 'Ref: clean round' / 'Ref took away 14 punches thrown faster ...'."""
+    took = [r for r in report.get("reasons") or [] if r.get("n")]
+    retro = bool(report.get("retro"))
+    lead = "Ref (checked after the bout)" if retro else "Ref"
+    parts = []
+    if took:
+        bits = ["%s thrown %s" % (_moves(r.get("punches", 0), r.get("blocks", 0)), r["text"]) for r in took]
+        verb = " would have taken away " if retro else " took away "
+        parts.append(lead + verb + " and ".join(bits) + ".")
+    if report.get("verdict") == "review":
+        why = ", ".join(report.get("notes") or []) or "an unusual round"
+        parts.append(("Under review: %s." if took else lead + ": under review, %s.") % why)
+        parts.append("The result stands." if retro else "This round doesn't count toward the rankings.")
+    elif not took:
+        parts.append(lead + ": clean round" + ("." if retro else ""))
+    elif retro:
+        parts.append("The result stands.")
+    return " ".join(parts)
+
+
+def referee(rnd):
+    """(kept events, report). report = {v, verdict: clean|adjusted|review, counts, kept, dropped, reasons, notes, line};
+    it's stored as stats["ref"] (stats is an obj column: no schema change)."""
+    device, secs = rnd.get("device"), int(rnd.get("secs") or 0)
+    events = sorted([list(e) for e in rnd.get("events") or []], key=lambda e: e[0])
+    pads = device == "pads"
+    gap = REF_PAD_GAP_MS if pads else REF_GAP_MS
+    top = REF_PAD_MAX_SPEED if pads else REF_MAX_SPEED
+    half, end = secs * 500, secs * 1000 + REF_BELL_SLACK_MS
+    last: dict = {"L": None, "R": None}
+    tally = {k: [0, 0] for k in REF_ORDER}  # [punches, blocks]
+    kept = []
+    for e in events:
+        t, hand, typ, speed = e[0], e[1], e[2], e[3]
+        why = None
+        if t > end:
+            why = "late"
+        elif device == "phone" and ((hand == "R" and t > half + REF_SWITCH_SLACK_MS) or (hand == "L" and t < half - REF_SWITCH_SLACK_MS)):
+            why = "hand"
+        elif speed > top:
+            why = "speed"
+        elif last[hand] is not None and t - last[hand] < gap:
+            why = "fast"
+        if why:
+            tally[why][1 if typ == "b" else 0] += 1
+            continue
+        kept.append(e)
+        last[hand] = t
+    dropped = len(events) - len(kept)
+    reasons = [{"key": k, "n": sum(tally[k]), "punches": tally[k][0], "blocks": tally[k][1], "text": REF_REASONS[k]}
+               for k in REF_ORDER if sum(tally[k])]
+    punches = [e for e in kept if e[2] != "b"]
+    notes = []
+    if _steady(punches):
+        notes.append("machine-like timing")
+    if len(kept) > 20 and len(set(round(e[3], 1) for e in kept)) <= 2:
+        notes.append("identical speeds")
+    if len(punches) >= REF_STEADY_MIN and len([e for e in punches if e[3] >= REF_MAX_SPEED - 0.1]) >= REF_LIMIT_SHARE * len(punches):
+        notes.append("fists at the speed limit all round")
+    if secs and len(punches) / float(secs) > REF_MAX_RATE:
+        notes.append("a punch rate no fighter keeps up")
+    if dropped >= 5 and dropped > REF_REVIEW_SHARE * len(events):
+        notes.append("most of it couldn't come from a real recorder" if dropped > 0.5 * len(events)
+                     else "too many impossible punches")
+    verdict = "review" if notes else ("adjusted" if dropped else "clean")
+    report: dict = {"v": 1, "verdict": verdict, "counts": verdict != "review", "kept": len(kept), "dropped": dropped,
+                    "reasons": reasons, "notes": notes}
+    report["line"] = ref_line(report)
+    return kept, report
+
+
+def round_record(rnd):
+    """(events, stats, score, flags) for a round to store. Browser rounds were refereed in clean_round (rnd["ref"]);
+    the gym's own rounds (house, demo, bots) go through the referee here, so every round carries a report."""
+    if isinstance(rnd.get("ref"), dict):
+        events, report = rnd["events"], rnd["ref"]
+    else:
+        events, report = referee(rnd)
+    stats, score = score_round(events, rnd["secs"])
+    stats["ref"] = report
+    flags = round_flags(stats, rnd["secs"], events) + (["under review"] if report.get("verdict") == "review" else [])
+    return events, stats, score, flags
+
+
+def ref_of(stats):
+    r = (stats or {}).get("ref")
+    return r if isinstance(r, dict) else None
+
+
+def ref_counts(stats):
+    """Does this round count toward ratings, records, points and bests? Rounds from before the ref always do."""
+    r = ref_of(stats)
+    return True if r is None or r.get("retro") else bool(r.get("counts", True))
+
+
+def ref_review(stats):
+    """Under review (now, or when an admin ran the ref over older rounds)."""
+    r = ref_of(stats)
+    return bool(r and r.get("verdict") == "review")
 
 
 def score_round(events, secs):
@@ -231,23 +388,49 @@ def points_for(kind, result_for_me, method):
 
 
 # ------------------------------------------------------------------------------------------------ house fighters
-def house_round(level, secs, seed=None):
-    """A believable round for a house fighter (or a demo fighter): {device, secs, events}."""
+HOUSE_GAP_MS = 340  # a house fist comes back no faster than a real recorder allows (the ref checks 280 ms)
+
+
+def house_round(level, secs, seed=None, device="house"):
+    """A believable round for a house fighter (or a demo fighter): {device, secs, events}. It obeys the same physics
+    the referee checks: each fist needs HOUSE_GAP_MS to come back; device "phone" throws the right hand in the first
+    half and the left in the second (like the phone recorder); "pads" taps at pad speeds."""
     ppm, mean_speed, block_share = HOUSE_LEVELS.get(level, HOUSE_LEVELS["club"])
     rnd = random.Random(seed)
     events, t, end = [], rnd.randint(300, 900), secs * 1000
     rate = ppm / 60.0
+    last = {"L": -10 ** 6, "R": -10 ** 6}
     while t < end:
-        if rnd.random() < block_share:
-            events.append([t, rnd.choice("LR"), "b", round(rnd.uniform(1.5, 3.5), 2)])
+        block = rnd.random() < block_share
+        r = rnd.random()
+        typ = "b" if block else ("s" if r < .62 else ("h" if r < .82 else "u"))
+        if device == "phone":
+            hand = "R" if t < secs * 500 else "L"
+            t = max(t, last[hand] + HOUSE_GAP_MS)
+            if hand == "R" and t >= secs * 500:
+                hand = "L"
+                t = max(t, last["L"] + HOUSE_GAP_MS)
         else:
-            r = rnd.random()
-            typ = "s" if r < .62 else ("h" if r < .82 else "u")
             hand = "L" if (typ == "s" and rnd.random() < .55) else rnd.choice("LR")
+            if t - last[hand] < HOUSE_GAP_MS:
+                other = "L" if hand == "R" else "R"
+                if t - last[other] >= HOUSE_GAP_MS:
+                    hand = other
+                else:
+                    hand = min(last, key=lambda k: last[k])
+                    t = last[hand] + HOUSE_GAP_MS
+        if t >= end:
+            break
+        if block:
+            speed = rnd.uniform(1.5, 3.5)
+        elif device == "pads":
+            speed = rnd.uniform(3.2, 5.8)
+        else:
             speed = clamp(rnd.gauss(mean_speed + (0.6 if typ != "s" else 0), 1.0), 1.5, 11.5)
-            events.append([t, hand, typ, round(speed, 2)])
+        events.append([t, hand, typ, round(speed, 2)])
+        last[hand] = t
         # bursts: short gaps inside a combo, longer resets between
         gap = rnd.uniform(.22, .45) if rnd.random() < .6 else rnd.expovariate(rate) + .2
         t += int(gap * 1000)
-    return {"device": "house", "secs": secs, "events": events}
+    return {"device": device, "secs": secs, "events": events}
 

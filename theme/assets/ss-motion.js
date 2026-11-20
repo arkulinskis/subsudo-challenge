@@ -193,9 +193,9 @@
     function brief() {
       var steps = {
         phone: ['Put your phone in your <b>right</b> fist, screen facing in. Grip it hard (a wrist strap helps).', 'Tap "Glove up", 3-2-1, the bell rings: punch for ' + (secs / 2) + ' seconds.',
-          'Forward = punch. Up and forward = uppercut. A fast turn = hook. Straight up or down = block.', 'Two bells: switch the phone to your <b>left</b> fist. 5 seconds to switch, then go again.'],
+          'Forward = punch. Up and forward = uppercut. A fast turn = hook. Straight up or down = block.', 'Two bells: switch the phone to your <b>left</b> fist. 5 seconds to switch, then go again.', 'Keep elbows soft: never snap them straight.'],
         camera: ['Put the laptop at chest height and step back until both fists are in the picture.', 'Allow the camera. The hand tracker loads (a few seconds, the first time).',
-          'Punch towards the screen. Up and forward = uppercut, swing across = hook, fists up/down = block.', 'Video stays on your device: only the punch counts are sent.'],
+          'Punch towards the screen. Up and forward = uppercut, swing across = hook, fists up/down = block.', 'Keep elbows soft: never snap them straight. Stay about 1.5 m from the screen.', 'Video stays on your device: only the punch counts are sent.'],
         pads: ['Tap the pads, or use the keys: F jab, J cross, D left hook, K right hook, U uppercut, Space block.', 'It\'s practice: pad rounds can\'t be used in bouts.']
       }[device];
       return '<div class="rc-brief"><h3>' + esc(GEAR[device].title) + '</h3><ol>' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol>' +
@@ -455,7 +455,7 @@
       }
       el.addEventListener('pointerdown', function (e) { var b = e.target.closest('[data-pad]'); if (b) { e.preventDefault(); pad(+b.getAttribute('data-pad')); } });
       var onKey = function (e) {
-        if (!e.key) return; // autofill sends keydown with no key
+        if (!e.key || e.repeat) return; // autofill sends keydown with no key; a held key isn't a flurry of punches
         var i = keys.findIndex(function (k) { return k[0] === (e.key || '').toUpperCase() || (k[0] === ' ' && e.key === ' '); });
         if (i >= 0) { e.preventDefault(); pad(i); }
       };

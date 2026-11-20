@@ -1,20 +1,38 @@
 from anvil import *
+import anvil.server
+from anvil.js import window
 
 from ._anvil_designer import BoutTemplate
 from ... import router, ss, state
 
 
 class Bout(BoutTemplate):
-    """#bout/<id> (Operate): the poster (scores sealed until the answer) and, by state: the result (judges' cards, tale of
-    the tape, punch log, post-fight words, rematch), fight back / duck, waiting (share the invite link again, cancel), or
-    a bout that ended without a result. Calls: get_bout, decline_bout, cancel_bout, post_words."""
+    """#bout/<id> (Operate): the poster (scores sealed until the answer) and, by state: the result (judges' cards, the
+    ref's report, tale of the tape, share the poster, punch log, post-fight words, rematch), fight back / duck, waiting
+    (share the invite link again, cancel), or a bout that ended without a result.
+    Visitors without an account (a shared poster or /b/<id> link) see finished bouts read-only (get_public_bout) with
+    "Think you'd beat them? Try a round"; anything not finished sends them to sign in and back here.
+    Calls: get_bout, get_public_bout, decline_bout, cancel_bout, post_words."""
 
     def __init__(self, args=(), **properties):
         super().__init__(**properties)
         self.b = ss.loose(None)
+        self.public = not state.me()
         state.set_control_attr(self.words_box, "maxlength", 280)
         state.set_control_attr(self.words_box, "aria-label", "Your words after the bout")
-        r = state.call("get_bout", args[0] if args else None)
+        bout_id = args[0] if args else None
+        if self.public:
+            r = anvil.server.call("get_public_bout", bout_id) if bout_id else None
+            if not (isinstance(r, dict) and r.get("ok")):
+                r = None
+                router.remember_after(router.href("bout", bout_id) if bout_id else "#home")
+                window.setTimeout(lambda: router.go("auth"), 0)  # not finished (or not here): sign in, then back
+            state.set_attr(self.gone_link, "href", "#landing")
+            self.dom_nodes["gone_text"].textContent = "What is Subsudo?"
+            state.set_attr(self.back_link, "href", "#rankings")
+            self.dom_nodes["back_text"].textContent = "Rankings"
+        else:
+            r = state.call("get_bout", bout_id)
         self.gone.visible = not r
         self.main.visible = bool(r)
         if r:
@@ -40,7 +58,10 @@ class Bout(BoutTemplate):
         self.answer_part.visible = not done and answer
         self.wait_part.visible = not done and not answer and wait
         self.over_part.visible = not done and not answer and not wait
+        self.member_cta.visible = done and not self.public
+        self.guest_cta.visible = done and self.public
         if done:
+            self.share.bout = b
             f = other.get("fighter") if other else None
             self.rematch_link.visible = bool(f and not f.get("me"))
             if f:
@@ -56,6 +77,7 @@ class Bout(BoutTemplate):
             self.say_part.visible = bool(b.get("can_words"))
             self.words_box.text = (b["b"].get("words") or "") if me == "b" else ""
             self.no_words.visible = not b["a"].get("words") and not b["b"].get("words") and not b.get("can_words")
+            self.words_card.visible = not self.public or bool(b["a"].get("words") or b["b"].get("words"))
         elif answer:
             w = b["a"].get("words")
             self.answer_words.text = "\u201c%s\u201d \u2014 %s" % (w, ss.bout_name(b["a"])) if w else ""

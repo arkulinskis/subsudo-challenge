@@ -7,7 +7,7 @@ from ... import state
 
 TABS = ["overview", "challenges", "log", "feedback", "users", "demo"]
 CSV_COLS = ["id", "created", "finished", "kind", "status", "a", "b", "a_device", "b_device", "a_score", "b_score", "a_punches",
-            "b_punches", "winner", "method", "city", "flags", "demo"]
+            "b_punches", "winner", "method", "city", "flags", "review", "ref", "demo"]
 
 
 class Admin(AdminTemplate):
@@ -171,6 +171,22 @@ class Admin(AdminTemplate):
         self._log_rows = d["fights"]
         self.log_rows.items = d["fights"]
         self.log_count.text = "%s · %s rounds in all" % (state.plural(d["total"], "bout"), d["rounds"])
+        left = d.get("unchecked") or 0
+        self.ref_button.visible = left > 0
+        review = len([x for x in d["fights"] if x.get("review")])
+        self.ref_note.text = ("%s from before the ref joined have no Ref's report. \"Ref older rounds\" checks them: it only "
+                              "adds a report (and an Under review badge), never changes a result. " % state.plural(left, "round")
+                              if left else "") + ("%s here under review." % state.plural(review, "bout") if review else "")
+        self.ref_note.visible = bool(self.ref_note.text)
+
+    @handle("ref_button", "click")
+    def ref_button_click(self, **event_args):
+        r = state.call("admin_ref_check", 300)
+        if r:
+            state.toast("Ref checked %s: %s clean, %s adjusted, %s under review%s" % (
+                state.plural(r["checked"], "round"), r["clean"], r["adjusted"], r["review"],
+                (" (%s left: press again)" % r["left"]) if r.get("left") else ""), "ok")
+            self._log()
 
     @handle("log_button", "click")
     def log_button_click(self, **event_args):

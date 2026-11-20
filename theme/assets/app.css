@@ -1032,6 +1032,82 @@ a.ad-log-row:hover { background: var(--c-surface-2); }
 @media (max-width: 900px) { .ad-cols { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .ad-form { grid-template-columns: 1fr; } .ad-log-row { grid-template-columns: 60px 80px minmax(80px, 1fr) minmax(80px, 1fr) 70px 90px; min-width: 520px; } .ad-log-row .opt, .ad-log-row .anvil-role-opt { display: none; } }
 
+/* ===== the fair-fight referee: the ref's report under the judges' cards (Components/Result, training, #try) ===== */
+.ss-ref { max-width: 520px; margin: 16px auto 0; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--c-surface-2); text-align: left; }
+.ss-ref-h { display: flex; align-items: center; gap: 8px; font: 700 .95rem/1.2 var(--font-cond); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; color: var(--c-ink); }
+.ss-ref-h .ic { width: 18px; height: 18px; color: var(--c-accent-ink); }
+.ss-ref-row { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: 4px 12px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--c-line); }
+.ui .anvil-role-ss-ref-who { font: 700 .95rem/1.3 var(--font-cond); text-transform: uppercase; letter-spacing: .04em; overflow-wrap: anywhere; }
+.ui .anvil-role-ss-ref-line { font-size: .95rem; line-height: 1.45; color: var(--c-ink); }
+.ui .anvil-role-ss-ref-line.anvil-role-ref-clean { color: var(--c-good); font-weight: 600; }
+.ui .anvil-role-ss-ref-line.anvil-role-ref-adjusted { color: var(--c-warn); font-weight: 600; }
+.ui .anvil-role-ss-ref-line.anvil-role-ref-review { color: var(--c-bad); font-weight: 600; }
+.ui .anvil-role-ss-ref-line.anvil-role-ref-none { color: var(--c-muted); }
+.ui .anvil-role-ss-ref-call { margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--c-bad-soft); color: var(--c-ink); font-weight: 600; font-size: .95rem; }
+.ui .anvil-role-fg-ref { margin: 10px auto 0; max-width: 46ch; text-align: center; }
+@media (max-width: 480px) { .ss-ref-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* ===== share the poster (Components/ShareBout) ===== */
+.ss-share { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 18px; align-items: center; }
+.ss-share-pic { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-sm); overflow: hidden; background: var(--c-hdr);
+  border: 3px solid #000; box-shadow: var(--shadow); }
+.ss-share-pic img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.ss-share-pic.ready img { opacity: 1; }
+.ss-share-wait { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; text-align: center;
+  font: 600 .85rem/1.3 var(--font-cond); text-transform: uppercase; letter-spacing: .05em; color: rgba(243, 236, 224, .78); }
+.ss-share-pic.ready .ss-share-wait { display: none; }
+.ss-share .card-h { margin-bottom: 6px; }
+.ss-share-acts { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 8px; }
+@media (max-width: 560px) { .ss-share { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; } }
+
+/* ===== bout page for visitors + the try-out round offered on #fight/invite ===== */
+.bt-try { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; margin: 4px 0 18px;
+  background: var(--c-accent-soft); border: 2px solid var(--c-accent); }
+.bt-try p { margin: 4px 0 0; max-width: 52ch; }
+.ui .bt-try-h { font-size: clamp(1.5rem, 5vw, 2rem); margin: 0; }
+.bt-try-acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.fg-tryout { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; margin-bottom: 18px;
+  background: var(--c-accent-soft); border: 2px dashed var(--c-accent); }
+.fg-tryout > .ic { width: 28px; height: 28px; color: var(--c-accent-ink); }
+.fg-tryout .card-h { margin: 0 0 4px; font-size: 1.15rem; }
+@media (max-width: 560px) { .fg-tryout { grid-template-columns: auto minmax(0, 1fr); } .fg-tryout > .anvil-role-btn { grid-column: 1 / -1; } }
+
+/* ===== #try: one round with no account ===== */
+.ty-hero { text-align: center; max-width: 760px; margin: 0 auto 18px; }
+.ty-hero h1 { font-size: clamp(2.2rem, 7vw, 3.6rem); margin: 6px 0 10px; }
+.ty-hero h1 em { font-style: normal; color: var(--c-brand-text); }
+.ty-hero p { margin: 0 auto; max-width: 60ch; }
+.ui .anvil-role-ty-waiting { display: inline-block; margin-top: 14px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--c-brand-soft); color: var(--c-ink); font-weight: 600; }
+.ty-safe { max-width: 760px; margin: 0 auto 18px; }
+.ty-safe .card-h { margin-bottom: 10px; }
+.ty-safe-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+.ty-safe-list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; line-height: 1.45; }
+.ty-safe-list .ic { width: 22px; height: 22px; color: var(--c-brand-text); margin-top: 1px; }
+@media (max-width: 640px) { .ty-safe-list { grid-template-columns: minmax(0, 1fr); } }
+.ty-result { text-align: center; }
+.ui .ty-result .anvil-role-fg-score { font-size: clamp(3.4rem, 14vw, 5rem); }
+.ui .ty-vs-h { font-size: 1.3rem; margin: 22px 0 10px; }
+.anvil-role-ty-chips > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ty-chip { display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: var(--radius-sm); border: 2px solid var(--c-line); background: var(--c-surface); }
+.ty-chip .ic { width: 22px; height: 22px; }
+.ty-chip-name { font: 700 1rem/1.2 var(--font-cond); text-transform: uppercase; letter-spacing: .04em; }
+.ty-chip-score { font-size: .85rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.ty-chip.ty-beat { border-color: var(--c-good); background: var(--c-good-soft); }
+.ty-chip.ty-beat .ic { color: var(--c-good); }
+.ty-chip.ty-lost .ic { color: var(--c-bad); }
+.ty-chip.ty-draw .ic { color: var(--c-warn); }
+@media (max-width: 420px) { .anvil-role-ty-chips > div { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ui .anvil-role-ty-verdict { font: 400 clamp(1.3rem, 5vw, 1.7rem)/1.2 var(--font-display); text-transform: uppercase; margin: 16px 0 6px; text-wrap: balance; }
+.ty-next .card-h { margin-bottom: 6px; }
+.ty-next p { margin: 0 0 12px; }
+.ty-acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.ty-again { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--c-line); }
+.ty-keep { margin: 12px 0 0; color: var(--c-muted); font-size: .875rem; }
+
+/* ===== landing + admin bits for the same features ===== */
+.ad-log-flags { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; min-width: 0; }
+.ui .anvil-role-ad-ref-note { margin: -4px 0 12px; }
+
 /* =====================================================================================================
    Anvil components: the same look through roles (prop:role='["btn", "btn-primary", "ic-wand"]').
    Button = .anvil-button wrapper > button; Link = a; TextBox = input; TextArea = textarea; DropDown = wrapper > select;

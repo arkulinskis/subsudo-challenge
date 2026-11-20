@@ -26,9 +26,9 @@ BOT_TAUNTS = ["Saw your name on the board. Let's see if it belongs there.", "Lon
 
 def _house_round_row(name, level, secs, seed):
     rnd = B.house_round(level, secs, seed=seed)
-    stats, score = B.score_round(rnd["events"], secs)
+    events, stats, score, flags = B.round_record(rnd)
     return app_tables.rounds.add_row(user=None, side="a", who=name, device="house", secs=secs, stats=stats,
-                                     events=rnd["events"], score=score, flags=[], created=C.now(), is_demo=False)
+                                     events=events, score=score, flags=flags, created=C.now(), is_demo=False)
 
 
 def house_fight(user, name, level, secs, words, campaign=None, a_round=None, days=7):
@@ -198,6 +198,8 @@ def admin_fight_log(query=None, status=None, kind=None):
         if query and not any(query in n.lower() for n in names):
             continue
         res = f["result"] or {}
+        a_ref, b_ref = (B.ref_of(a["stats"]) if a is not None else None), (B.ref_of(b["stats"]) if b is not None else None)
+        verdicts = [x.get("verdict") for x in (a_ref, b_ref) if x]
         out.append({"id": f.get_id(), "created": C.iso(f["created"]), "finished": C.iso(f["finished"]), "kind": f["kind"],
                     "status": f["status"], "a": names[0], "b": names[1] or ("(open)" if f["status"] == "open" else "(guest)"),
                     "a_device": a["device"] if a is not None else "", "b_device": b["device"] if b is not None else "",
@@ -207,8 +209,41 @@ def admin_fight_log(query=None, status=None, kind=None):
                     "b_punches": (b["stats"] or {}).get("punches") if b is not None else None,
                     "winner": f["winner"] or "", "method": res.get("method") or "",
                     "flags": ((a["flags"] or []) if a is not None else []) + ((b["flags"] or []) if b is not None else []),
-                    "city": f["city_key"] or "", "demo": bool(f["is_demo"])})
+                    "city": f["city_key"] or "", "demo": bool(f["is_demo"]),
+                    "review": "review" in verdicts, "adjusted": "adjusted" in verdicts,
+                    "ref": " / ".join(x.get("line", "") for x in (a_ref, b_ref) if x and x.get("verdict") != "clean")})
         if len(out) >= 400:
             break
     rounds = len(app_tables.rounds.search())
-    return {"fights": out, "total": len(out), "rounds": rounds}
+    unchecked = len([r for r in app_tables.rounds.search() if _needs_ref(r)])
+    return {"fights": out, "total": len(out), "rounds": rounds, "unchecked": unchecked}
+
+
+def _needs_ref(r):
+    """A member's or guest's round recorded before the ref joined (2026-11-20), so it has no Ref's report."""
+    return (B.ref_of(r["stats"]) is None and not r["is_demo"] and r["device"] in ("phone", "camera", "pads")
+            and isinstance(r["events"], list))
+
+
+@anvil.server.callable(require_user=True)
+def admin_ref_check(limit=300):
+    """Run the ref over older rounds (admins only). It only adds a report marked "checked after the bout": scores,
+    results, ratings and points stay exactly as they were, nothing is deleted. Rounds it would put under review get the
+    "Under review" badge in the fight log and stop counting toward the fighter's bests and badges."""
+    C.require_admin()
+    n = {"checked": 0, "clean": 0, "adjusted": 0, "review": 0}
+    todo = [r for r in app_tables.rounds.search() if _needs_ref(r)]
+    for r in todo[:max(1, min(int(limit or 300), 500))]:
+        kept, rep = B.referee({"device": r["device"], "secs": r["secs"] or 60, "events": r["events"]})
+        rep["retro"] = True
+        rep["line"] = B.ref_line(rep)
+        st = dict(r["stats"] or {})
+        st["ref"] = rep
+        flags = list(r["flags"] or [])
+        if rep["verdict"] == "review" and "under review" not in flags:
+            flags.append("under review")
+        r.update(stats=st, flags=flags)
+        n["checked"] += 1
+        n[rep["verdict"]] += 1
+    n["left"] = max(0, len(todo) - n["checked"])
+    return C.ok(**n)

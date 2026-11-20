@@ -159,7 +159,8 @@ def get_gym():
     my_r = rating_of(me)
     pool = [u for u in app_tables.users.search(open_to_fights=True) if u != me and active(u)]
     pool.sort(key=lambda u: (abs(rating_of(u) - my_r) - (60 if u["city_key"] != me["city_key"] else 0)))
-    train = list(app_tables.rounds.search(tables.order_by("created", ascending=False), user=me, side="train"))
+    train = [r for r in app_tables.rounds.search(tables.order_by("created", ascending=False), user=me, side="train")
+             if not B.ref_review(r["stats"])]  # rounds the ref put under review set no bests
     return {"me": fighter(me, me, bm), "rank": {"global": g, "city": c, "ranked_total": len(rows)},
             "needs_card": not (me["ring_name"] and me["city"]),
             "to_answer": [Fights.bout(f, me) for f in to_answer[:12]],
@@ -236,7 +237,7 @@ def get_fighter(fighter_id):
     for h in reversed(history):
         h["rating"] = r
         r -= h["delta"]
-    rounds = list(app_tables.rounds.search(user=u))
+    rounds = [x for x in app_tables.rounds.search(user=u) if not B.ref_review(x["stats"])]  # the ref's review rounds set no bests
     best = {"score": max([x["score"] or 0 for x in rounds] or [0]),
             "speed": max([(x["stats"] or {}).get("top_speed", 0) for x in rounds] or [0]),
             "punches": max([(x["stats"] or {}).get("punches", 0) for x in rounds] or [0]),

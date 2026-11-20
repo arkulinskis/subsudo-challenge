@@ -79,11 +79,40 @@ theme/assets/    ss-core.js (window.SS: portraits SS.avatar, punch timeline, rat
   keep the same counts.
 - **Admin house fighter** is a DropDown of `HOUSE_FIGHTERS`.
 - The Recorder's gear icon wrapper is `.rc-ic` (`.ic` is the icon-mask class).
+- **The fair-fight referee** (2026-11-20): `Boxing.referee(rnd)` -> (kept events, report), called at the end of
+  `clean_round`, so every browser round is scored on the kept events only. Hard rules drop events (same hand within
+  `REF_GAP_MS` 280 ms, 90 for pads; speed over 13, 6 for pads; phone `R` after secs*500+200 / `L` before secs*500-200;
+  anything after secs*1000+500). Soft rules add notes and make the verdict `review` (machine-like timing CV < 5% over
+  20+ punches, identical speeds, 60%+ at the speed limit, > 5 punches/s, > 20% dropped). The report (with its `line`)
+  is stored as `stats["ref"]` (obj column, no schema). Every round row is made through `B.round_record(rnd)`, which also
+  referees the gym's own rounds (house, demo, bots). `B.ref_counts(stats)` decides if a round counts: `Fights.finish`
+  gives an unranked result (`result["ref"]`) when a round is under review: no Elo/record change, 0 points for that
+  side, the clean side at least a draw's points, no best_speed/total/last_fight for that side. `save_training`: no
+  points or bests for review rounds; pads never set best_speed. Fighter bests/badges and gym bag-work bests skip review
+  rounds (`B.ref_review`, which also sees admin "checked after the bout" reports). Display: `Fights.ref_view(r)` ->
+  `side["ref"]` -> Components/Result's "The ref's report".
+- **`house_round(level, secs, seed, device)`** obeys the ref: each hand needs `HOUSE_GAP_MS` (340), `device="phone"`
+  throws right then left, `"pads"` taps at pad speeds. Generate with the device the round will be labelled with.
+- **#try** (Pages/Try, public): Recorder -> `try_round` (public, rate-limited 20/h, writes nothing) -> score, ref,
+  four `house` verdicts. Browser storage `subsudo.try_round` = {round, at, score, punches, device, claimed, invited}
+  (`ss.try_round_saved/try_round_mark`, 24 h). Pages/Home `_claim_try` saves it once with `save_training`; Pages/Fight
+  invite mode offers it ("Use your try-out round") and calls `create_invite` with it. Invites need a ring name OR a
+  display name (sign-up sets one); call-outs still need the fighter card.
+- **Sharing a bout**: `get_public_bout` (public, done bouts only, `Fights.public_bout` strips `fighter.name` and uses
+  `public_name`: ring name, display name, else "A Subsudo fighter"); router `"bout"` is open to anyone; Pages/Bout
+  uses it when signed out and sends unfinished bouts to #auth (remember_after). Components/ShareBout + 
+  `theme/assets/ss-poster.js` (`SS.posterPng` 1080x1350, `SS.posterStart` non-blocking preview, `SS.sharePoster`
+  share sheet or download + copied link, `SS.boutUrl` = `/b/<a-b>`). `server_code/SharePages.py` serves `/b/:code`
+  (route; also `/_/api/b/:code`) with og/twitter tags from `Fights.public_headline`, noindex, and a redirect to
+  `/#bout/<id>`.
 
 ## Recipes
 
 - **New page / server function / table:** template-forms recipes (public callables in `PUBLIC` in test_server.py;
   ownership checks; `C.ok` / `C.fail`). Add the address to tools/ui/smoke.js.
+- **Tune the referee:** the `REF_*` constants in Boxing.py; keep them looser than the engines (`PhoneDetector.REFRACTORY`,
+  the camera's 320 ms, the 13 m/s clamps) so real rounds never trip a hard rule. Update the FAQ and "How the rankings
+  work" if the rules change.
 - **Change scoring:** `Boxing.score_round` AND its mirror `SS.score` in ss-core.js (the live score in the recorder).
   The server's score is the one that counts. Judges: `Boxing.JUDGES` + `_judge_metric`; stoppages in `judge()`.
 - **Tune punch detection:** phone = `PhoneDetector.TRIGGER/WINDOW/REFRACTORY` and the ratios in
@@ -119,7 +148,9 @@ theme/assets/    ss-core.js (window.SS: portraits SS.avatar, punch timeline, rat
 - The portrait SVG uses ids made unique per drawing (`sf1`, `sf2`...); keep that when adding defs. Default view crops
   to the face (viewBox 20 18 160 160); `SS.face(spec, {full: true})` draws the whole 200x200 scene.
 - `Fights.finish(f, when)` takes the bout time (demo data fights in the past).
-- Pad rounds are accepted only for training (`clean_round(training=True)`).
+- Pad rounds are accepted only for training (`clean_round(training=True)`) and on #try.
+- Tests that build rounds must play by the ref: `Boxing.house_round(..., device=...)`, never a house round relabelled
+  as "phone" (its right hand would land in the left half and be dropped).
 - Anton headings are uppercased by CSS: compare text lowercased in tests.
 - Email confirmation is off: whoever first signs up with an ADMIN_EMAILS address (Accounts.py) becomes admin.
 - Never write Anvil's theme-colour token pattern (percent, `color:`, name, percent) in theme.css.

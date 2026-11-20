@@ -94,11 +94,11 @@ def _bout(a, b, when, secs, la, lb, seed, words=""):
 
 
 def _round(user, level, secs, seed, when, side="a"):
-    rnd = B.house_round(level, secs, seed=seed)
-    stats, score = B.score_round(rnd["events"], secs)
     device = "camera" if sum(ord(ch) for ch in seed) % 3 == 0 else "phone"
+    rnd = B.house_round(level, secs, seed=seed, device=device)
+    events, stats, score, flags = B.round_record(rnd)
     return app_tables.rounds.add_row(user=user, side=side, who=F.ring_name(user), device=device, secs=secs, stats=stats,
-                                     events=rnd["events"], score=score, flags=[], created=when, is_demo=True)
+                                     events=events, score=score, flags=flags, created=when, is_demo=True)
 
 
 def load():
@@ -133,8 +133,7 @@ def load():
     # open call-outs anyone can take
     for who, words, city_only in OPEN_CALLS:
         u = users[who]
-        rnd = B.house_round(Fights._level_for(F.rating_of(u)), 60, seed="open%d" % who)
-        rnd["device"] = "phone"
+        rnd = B.house_round(Fights._level_for(F.rating_of(u)), 60, seed="open%d" % who, device="phone")
         flt = {"city_key": u["city_key"], "city": u["city"]} if city_only else {}
         f = Fights._new_fight("open", "open", u, None, rnd, words, F.ring_name(u), "", is_demo=True, open_filter=flt)
         f["created"] = now - dt.timedelta(hours=6 + who)

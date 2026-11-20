@@ -1,10 +1,10 @@
 <anvil-form layout="Subsudo.Layouts.Shell">
   <anvil-block slot="content">
     <div class="ui-wrap">
-      <div class="ui-empty" anvil:name="gone"><i class="ic ic-lock"></i><h3>This bout isn't here</h3><p>It may have been removed, or it isn't one of yours.</p><a class="ui-btn" href="#mail">Back to Mail</a></div>
+      <div class="ui-empty" anvil:name="gone"><i class="ic ic-lock"></i><h3>This bout isn't here</h3><p>It may have been removed, or it isn't one of yours.</p><a class="ui-btn" href="#mail" anvil:name="gone_link"><span anvil:dom-node="gone_text">Back to Mail</span></a></div>
       <div anvil:name="main">
         <div class="bt-meta">
-          <a class="ui-btn ghost sm" href="#mail"><i class="ic ic-back"></i>Mail</a>
+          <a class="ui-btn ghost sm" href="#mail" anvil:name="back_link"><i class="ic ic-back"></i><span anvil:dom-node="back_text">Mail</span></a>
           <anvil-component type="Label" name="kind" prop:role='["badge"]'></anvil-component>
           <span class="ui-badge"><i class="ic ic-timer"></i><anvil-component type="Label" name="secs"></anvil-component></span>
           <anvil-component type="Label" name="campaign" prop:role='["badge", "badge-brass"]'></anvil-component>
@@ -16,16 +16,21 @@
         <anvil-component type="Subsudo.Components.Poster" name="poster"></anvil-component>
 
         <div anvil:name="done_part">
-          <div class="bt-cta">
+          <div class="bt-cta" anvil:name="member_cta">
             <a class="ui-btn primary" anvil:name="rematch_link" href="#home"><i class="ic ic-refresh"></i>Rematch</a>
             <a class="ui-btn" href="#find"><i class="ic ic-megaphone"></i>Find another fight</a>
+          </div>
+          <div class="ui-card bt-try" anvil:name="guest_cta">
+            <div><h2 class="bt-try-h">Think you'd beat them?</h2><p class="muted">One free round with your phone, your laptop camera or the pads. No account needed, and the house tells you where you'd stand.</p></div>
+            <div class="bt-try-acts"><a class="ui-btn primary lg" href="#try"><i class="ic ic-glove"></i>Try a round</a><a class="ui-btn lg" href="#landing">What is Subsudo?</a></div>
           </div>
           <div class="bt-grid">
             <div class="ui-card"><anvil-component type="Subsudo.Components.Result" name="result"></anvil-component></div>
             <div class="ui-card"><h2 class="card-h">Tale of the tape</h2><anvil-component type="Subsudo.Components.VsBars" name="bars"></anvil-component></div>
           </div>
+          <div class="ui-card bt-gap"><anvil-component type="Subsudo.Components.ShareBout" name="share"></anvil-component></div>
           <div class="ui-card bt-gap"><h2 class="card-h">Punch log</h2><anvil-component type="Subsudo.Components.Timeline" name="timeline"></anvil-component></div>
-          <div class="ui-card bt-gap">
+          <div class="ui-card bt-gap" anvil:name="words_card">
             <h2 class="card-h">Words</h2>
             <div class="bt-words">
               <div class="bt-quote a" anvil:name="a_quote"><anvil-component type="Label" name="a_quote_who" prop:role='["bt-who"]'></anvil-component><anvil-component type="Label" name="a_quote_text" prop:role='["bt-text"]'></anvil-component></div>
